@@ -21,7 +21,7 @@ class SAP:
         self.connection = self.__verify_sap_open()
 
         if self.connection.Children(0).info.user == '':
-            print("SAP user is logged out!", "You need to log in to SAP to run this script! Please log in and try again.")
+            print("SAP user is logged out!\nYou need to log in to SAP to run this script! Please log in and try again.")
             exit()
 
         if self.connection.Children(0).info.systemName == 'EQ0':
@@ -38,7 +38,7 @@ class SAP:
             application = sapguiauto.GetScriptingEngine
             return application.Children(0)
         except:
-            print("SAP is not open!\n", "SAP must be open to run this script! Please, open it and try to run again."),
+            print("SAP is not open!\nSAP must be open to run this script! Please, open it and try to run again."),
             exit()
 
     # Count the number of open SAP screens
@@ -169,7 +169,7 @@ class SAP:
                         children(index + 1).Text = self.desired_text
                         return True
                     except Exception as e:
-                        print('The error $error has happened!'.replace('$error', str(e)))
+                        print("The error $error has happened!".replace('$error', str(e)))
                     return
                 else:
                     self.target_index -= 1
@@ -181,7 +181,7 @@ class SAP:
                         children(index + 3).Text = self.desired_text
                         return True
                     except Exception as e:
-                        print('The error $error has happened!'.replace('$error', str(e)))
+                        print("The error $error has happened!".replace('$error', str(e)))
                     return
                 else:
                     self.target_index -= 1
@@ -193,7 +193,7 @@ class SAP:
                 try:
                     return True
                 except Exception as e:
-                    print('The error $error has happened!'.replace('$error', str(e)))
+                    print("The error $error has happened!".replace('$error', str(e)))
 
             return False
 
@@ -211,7 +211,7 @@ class SAP:
                                 Obj.press()
                                 return True
                     except Exception as e:
-                        print('The error $error has happened!'.replace('$error', str(e)))
+                        print("The error $error has happened!".replace('$error', str(e)))
                     return
                 else:
                     self.target_index -= 1
@@ -223,7 +223,7 @@ class SAP:
                         children(index).Selected = self.desired_operator
                         return True
                     except Exception as e:
-                        print('The error $error has happened!'.replace('$error', str(e)))
+                        print("The error $error has happened!".replace('$error', str(e)))
                     return
                 else:
                     self.target_index -= 1
@@ -235,7 +235,7 @@ class SAP:
                         children(index + self.side_index).Selected = self.desired_operator
                         return True
                     except Exception as e:
-                        print('The error $error has happened!'.replace('$error', str(e)))
+                        print("The error $error has happened!".replace('$error', str(e)))
                     return
                 else:
                     self.target_index -= 1
@@ -247,7 +247,7 @@ class SAP:
                         children(index).Select()
                         return True
                     except Exception as e:
-                        print('The error $error has happened!'.replace('$error', str(e)))
+                        print("The error $error has happened!".replace('$error', str(e)))
                     return
                 else:
                     self.target_index -= 1
@@ -269,7 +269,7 @@ class SAP:
                         pass
             except Exception as e:
                 if str(e) != 'index out of range':
-                    print('The error $error has happened!'.replace('$error', str(e)))
+                    print("The error $error has happened!".replace('$error', str(e)))
             return
 
         if objective == 'choose_text_combo':
@@ -283,7 +283,7 @@ class SAP:
                                 children(index + 1).key = entry.key
                                 return True
                     except Exception as e:
-                        print('The error $error has happened!'.replace('$error', str(e)))
+                        print("The error $error has happened!".replace('$error', str(e)))
                     return
 
         if objective == 'get_text_at_side':
@@ -293,19 +293,20 @@ class SAP:
                         self.found_text = children(index + self.side_index).Text
                         return True
                     except Exception as e:
-                        print('The error $error has happened!'.replace('$error', str(e)))
+                        print("The error $error has happened!".replace('$error', str(e)))
                     return
 
         return False
 
     # Selects a transaction within the SAP session.
     def select_transaction(self, transaction: str):
-        self.session.startTransaction(transaction)
-        if self.session.activeWindow.name == 'wnd[1]' and 'CN' in transaction:
+        transaction_upper = transaction.upper()
+        self.session.startTransaction(transaction_upper)
+        if self.session.activeWindow.name == 'wnd[1]' and 'CN' in transaction_upper:
             self.session.findById("wnd[1]/usr/ctxtTCNT-PROF_DB").Text = "000000000001"
             self.session.findById("wnd[1]/tbar[0]/btn[0]").press()
-        if not self.session.info.transaction == transaction:
-            print('Error selecting transaction\n', self.get_footer_message())
+        if not self.session.info.transaction == transaction_upper:
+            print("Error selecting transaction\n" + self.get_footer_message())
             exit()
 
     # Selects the main screen of the SAP session.
@@ -326,7 +327,7 @@ class SAP:
                 try:
                     child.Text = ""
                 except Exception as e:
-                    print('The error $error has happened!'.replace('$error', str(e)))
+                    print("The error $error has happened!".replace('$error', str(e)))
 
     # Run the active transaction in the SAP screen
     def run_actual_transaction(self):
@@ -349,7 +350,7 @@ class SAP:
                 if self.session.activewindow.name == 'wnd[1]':
                     pass
         except Exception as e:
-            print('The error $error has happened!'.replace('$error', str(e)))
+            print("The error $error has happened!".replace('$error', str(e)))
 
     # Changes the active tab within the SAP session.
     def change_active_tab(self, selected_tab: int):
@@ -359,7 +360,7 @@ class SAP:
         try:
             area.Select()
         except Exception as e:
-            print('The error $error has happened!'.replace('$error', str(e)))
+            print("The error $error has happened!".replace('$error', str(e)))
         return
 
     # Writes text into a text field within the SAP session.
@@ -472,14 +473,14 @@ class SAP:
             if os.path.exists('C:/Temp/temp_paste.txt'):
                 os.remove('C:/Temp/temp_paste.txt')
         except Exception as e:
-            print('The error $error has happened!'.replace('$error', str(e)))
+            print("The error $error has happened!".replace('$error', str(e)))
 
     # Navigate around the menu in the SAP header
     def navigate_into_menu_header(self, path: str):
         try:
             id_path = 'wnd[0]/mbar'
             if ';' not in path:
-                print('Code Error!', "The menu path must be in the format 'path1;path2;path3'")
+                print("Code Error!\nThe menu path must be in the format 'path1;path2;path3'")
                 exit()
 
             list_of_paths = path.split(';')
@@ -493,7 +494,7 @@ class SAP:
                         break
             self.session.findById(id_path).Select()
         except Exception as e:
-            print('The error $error has happened!'.replace('$error', str(e)))
+            print("The error $error has happened!".replace('$error', str(e)))
 
     # Saves a file in the SAP session.
     def save_file(self, file_name: str, path: str, option=0, type_of_file='txt'):
