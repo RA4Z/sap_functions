@@ -1,5 +1,4 @@
 import win32com.client
-from tkinter import messagebox
 import re
 import os
 import time
@@ -24,8 +23,7 @@ class SAP:
         self.connection = self.__verify_sap_open()
 
         if self.connection.Children(0).info.user == '':
-            messagebox.showerror(title="SAP user is logged out!",
-                                 message="You need to log in to SAP to run this script! Please log in and try again.")
+            print("SAP user is logged out!", "You need to log in to SAP to run this script! Please log in and try again.")
             exit()
 
         if self.connection.Children(0).info.systemName == 'EQ0':
@@ -45,8 +43,7 @@ class SAP:
             if self.scheduled_execution['scheduled?']:
                 return self.__open_sap()
             else:
-                messagebox.showerror(title="SAP is not open!",
-                                     message="SAP must be open to run this script! Please, open it and try to run again.")
+                print("SAP is not open!\n", "SAP must be open to run this script! Please, open it and try to run again."),
                 exit()
 
     def __open_sap(self):
@@ -335,8 +332,7 @@ class SAP:
             self.session.findById("wnd[1]/usr/ctxtTCNT-PROF_DB").Text = "000000000001"
             self.session.findById("wnd[1]/tbar[0]/btn[0]").press()
         if not self.session.info.transaction == transaction:
-            messagebox.showerror(title='Error selecting transaction',
-                                 message=self.get_footer_message())
+            print('Error selecting transaction\n', self.get_footer_message())
             exit()
 
     # Selects the main screen of the SAP session.
@@ -510,8 +506,7 @@ class SAP:
         try:
             id_path = 'wnd[0]/mbar'
             if ';' not in path:
-                messagebox.showerror(title='Code Error!',
-                                     message="The menu path must be in the format 'path1;path2;path3'")
+                print('Code Error!', "The menu path must be in the format 'path1;path2;path3'")
                 exit()
 
             list_of_paths = path.split(';')
