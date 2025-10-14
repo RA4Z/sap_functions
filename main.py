@@ -12,13 +12,12 @@ import subprocess
 class SAP:
 
     # Initializes the SAP object with a specified window index.
-    def __init__(self, window: int, scheduled_execution):
+    def __init__(self, window: int):
         self.side_index = None
         self.desired_operator = None
         self.desired_text = None
         self.field_name = None
         self.target_index = None
-        self.scheduled_execution = scheduled_execution
         self.connection = self.__verify_sap_open()
 
         if self.connection.Children(0).info.user == '':
