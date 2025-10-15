@@ -10,7 +10,7 @@ import time
 class SAP:
 
     # Initializes the SAP object with a specified window index.
-    def __init__(self, window: int):
+    def __init__(self, window: int = 0):
         self.side_index = None
         self.desired_operator = None
         self.desired_text = None
