@@ -16,11 +16,10 @@ class SAP:
         self.desired_text = None
         self.field_name = None
         self.target_index = None
-        self.connection = self.__verify_sap_open()
+        self.connection = self.__get_sap_connection()
 
         if self.connection.Children(0).info.user == '':
-            print("SAP user is logged out!\nYou need to log in to SAP to run this script! Please log in and try again.")
-            exit()
+            raise Exception("SAP user is logged out!\nYou need to log in to SAP to run this script! Please log in and try again.")
 
         if self.connection.Children(0).info.systemName == 'EQ0':
             print("You're with SAP Quality Assurance open, (SAP QA)\nMany things may not happen as desired!")
@@ -30,14 +29,13 @@ class SAP:
         self.window = self.__active_window()
 
     # Verify if SAP is open
-    def __verify_sap_open(self):
+    def __get_sap_connection(self):
         try:
             sapguiauto = win32com.client.GetObject('SAPGUI')
             application = sapguiauto.GetScriptingEngine
             return application.Children(0)
         except:
-            print("SAP is not open!\nSAP must be open to run this script! Please, open it and try to run again."),
-            exit()
+            raise Exception("SAP is not open!\nSAP must be open to run this script! Please, open it and try to run again.")
 
     # Count the number of open SAP screens
     def __count_sap_screens(self, window: int):
@@ -166,9 +164,8 @@ class SAP:
                     try:
                         children(index + 1).Text = self.desired_text
                         return True
-                    except Exception as e:
-                        print("The error $error has happened!".replace('$error', str(e)))
-                    return
+                    except:
+                        return False
                 else:
                     self.target_index -= 1
 
@@ -178,9 +175,8 @@ class SAP:
                     try:
                         children(index + 3).Text = self.desired_text
                         return True
-                    except Exception as e:
-                        print("The error $error has happened!".replace('$error', str(e)))
-                    return
+                    except:
+                        return False
                 else:
                     self.target_index -= 1
 
@@ -188,11 +184,7 @@ class SAP:
             child = children(index)
             if (self.field_name in child.Text or
                     ('HTMLControl' in child.Text and self.field_name in child.BrowserHandle.document.all(0).innerText)):
-                try:
-                    return True
-                except Exception as e:
-                    print("The error $error has happened!".replace('$error', str(e)))
-
+                return True
             return False
 
         if objective == 'multiple_selection_field':
@@ -208,9 +200,9 @@ class SAP:
                             if campo in Obj.name:
                                 Obj.press()
                                 return True
-                    except Exception as e:
-                        print("The error $error has happened!".replace('$error', str(e)))
-                    return
+                    except:
+                        return False
+                    return False
                 else:
                     self.target_index -= 1
 
@@ -220,9 +212,8 @@ class SAP:
                     try:
                         children(index).Selected = self.desired_operator
                         return True
-                    except Exception as e:
-                        print("The error $error has happened!".replace('$error', str(e)))
-                    return
+                    except:
+                        return False
                 else:
                     self.target_index -= 1
 
@@ -232,9 +223,8 @@ class SAP:
                     try:
                         children(index + self.side_index).Selected = self.desired_operator
                         return True
-                    except Exception as e:
-                        print("The error $error has happened!".replace('$error', str(e)))
-                    return
+                    except:
+                        return False
                 else:
                     self.target_index -= 1
 
@@ -244,9 +234,8 @@ class SAP:
                     try:
                         children(index).Select()
                         return True
-                    except Exception as e:
-                        print("The error $error has happened!".replace('$error', str(e)))
-                    return
+                    except:
+                        return False
                 else:
                     self.target_index -= 1
 
@@ -264,11 +253,10 @@ class SAP:
                                 if self.field_name in tooltip_button:
                                     children(index).pressButton(id_button)
                     except:
-                        pass
-            except Exception as e:
-                if str(e) != 'index out of range':
-                    print("The error $error has happened!".replace('$error', str(e)))
-            return
+                        return False
+            except:
+                return False
+            return False
 
         if objective == 'choose_text_combo':
             if children(index).Text == self.field_name:
@@ -280,9 +268,9 @@ class SAP:
                             if self.desired_text == str(entry.Value):
                                 children(index + 1).key = entry.key
                                 return True
-                    except Exception as e:
-                        print("The error $error has happened!".replace('$error', str(e)))
-                    return
+                    except:
+                        return False
+                    return False
 
         if objective == 'get_text_at_side':
             if children(index).Text == self.field_name:
@@ -290,10 +278,8 @@ class SAP:
                     try:
                         self.found_text = children(index + self.side_index).Text
                         return True
-                    except Exception as e:
-                        print("The error $error has happened!".replace('$error', str(e)))
-                    return
-
+                    except:
+                        return False
         return False
 
     # Selects a transaction within the SAP session.
@@ -304,8 +290,7 @@ class SAP:
             self.session.findById("wnd[1]/usr/ctxtTCNT-PROF_DB").Text = "000000000001"
             self.session.findById("wnd[1]/tbar[0]/btn[0]").press()
         if not self.session.info.transaction == transaction_upper:
-            print("Error selecting transaction\n" + self.get_footer_message())
-            exit()
+            raise Exception("Error selecting transaction\n" + self.get_footer_message())
 
     # Selects the main screen of the SAP session.
     def select_main_screen(self):
@@ -324,31 +309,27 @@ class SAP:
             if child.Type == "GuiCTextField":
                 try:
                     child.Text = ""
-                except Exception as e:
-                    print("The error $error has happened!".replace('$error', str(e)))
+                except:
+                    pass
 
     # Run the active transaction in the SAP screen
     def run_actual_transaction(self):
         self.window = self.__active_window()
         screen_title = self.session.activeWindow.text
         self.session.findById(f'wnd[{self.window}]').sendVKey(0)
-        try:
-            if screen_title == self.session.activeWindow.text: self.session.findById(f'wnd[{self.window}]').sendVKey(8)
-        except:
-            pass
-
+        if screen_title == self.session.activeWindow.text: 
+            self.session.findById(f'wnd[{self.window}]').sendVKey(8)
+        
     # Inserts a variant into the SAP session.
     def insert_variant(self, variant_name: str):
-        try:
-            self.session.findById("wnd[0]/tbar[1]/btn[17]").press()
-            if self.session.activeWindow.name == 'wnd[1]':
-                self.session.findById("wnd[1]/usr/txtV-LOW").Text = variant_name
-                self.session.findById("wnd[1]/usr/txtENAME-LOW").Text = ""
-                self.session.findById("wnd[1]/tbar[0]/btn[8]").press()
-                if self.session.activewindow.name == 'wnd[1]':
-                    pass
-        except Exception as e:
-            print("The error $error has happened!".replace('$error', str(e)))
+        self.session.findById("wnd[0]/tbar[1]/btn[17]").press()
+        if self.session.activeWindow.name == 'wnd[1]':
+            self.session.findById("wnd[1]/usr/txtV-LOW").Text = variant_name
+            self.session.findById("wnd[1]/usr/txtENAME-LOW").Text = ""
+            self.session.findById("wnd[1]/tbar[0]/btn[8]").press()
+            if self.session.activewindow.name == 'wnd[1]':
+                pass
+
 
     # Changes the active tab within the SAP session.
     def change_active_tab(self, selected_tab: int):
@@ -357,8 +338,8 @@ class SAP:
                                           selected_tab)
         try:
             area.Select()
-        except Exception as e:
-            print("The error $error has happened!".replace('$error', str(e)))
+        except:
+            pass
         return
 
     # Writes text into a text field within the SAP session.
@@ -460,39 +441,33 @@ class SAP:
 
     # Pastes data into multiple selection fields in the SAP session.
     def multiple_selection_paste_data(self, data: str):
-        try:
-            with open('C:/Temp/temp_paste.txt', 'w') as arquivo:
-                arquivo.write(data)
-            self.session.findById("wnd[1]/tbar[0]/btn[23]").press()
-            self.session.findById("wnd[2]/usr/ctxtDY_PATH").text = 'C:/Temp'
-            self.session.findById("wnd[2]/usr/ctxtDY_FILENAME").text = "temp_paste.txt"
-            self.session.findById("wnd[2]/tbar[0]/btn[0]").press()
-            self.session.findById("wnd[1]/tbar[0]/btn[8]").press()
-            if os.path.exists('C:/Temp/temp_paste.txt'):
-                os.remove('C:/Temp/temp_paste.txt')
-        except Exception as e:
-            print("The error $error has happened!".replace('$error', str(e)))
+        with open('C:/Temp/temp_paste.txt', 'w') as arquivo:
+            arquivo.write(data)
+        self.session.findById("wnd[1]/tbar[0]/btn[23]").press()
+        self.session.findById("wnd[2]/usr/ctxtDY_PATH").text = 'C:/Temp'
+        self.session.findById("wnd[2]/usr/ctxtDY_FILENAME").text = "temp_paste.txt"
+        self.session.findById("wnd[2]/tbar[0]/btn[0]").press()
+        self.session.findById("wnd[1]/tbar[0]/btn[8]").press()
+        if os.path.exists('C:/Temp/temp_paste.txt'):
+            os.remove('C:/Temp/temp_paste.txt')
+      
 
     # Navigate around the menu in the SAP header
     def navigate_into_menu_header(self, path: str):
-        try:
-            id_path = 'wnd[0]/mbar'
-            if ';' not in path:
-                print("Code Error!\nThe menu path must be in the format 'path1;path2;path3'")
-                exit()
+        id_path = 'wnd[0]/mbar'
+        if ';' not in path:
+            raise Exception("Code Error!\nThe menu path must be in the format 'path1;path2;path3'")
 
-            list_of_paths = path.split(';')
-            for active_path in list_of_paths:
-                children = self.session.findById(id_path).Children
-                for i in range(children.Count):
-                    Obj = children(i)
-                    if active_path in Obj.Text:
-                        menu_address = Obj.ID.split("/")[-1]
-                        id_path += f'/{menu_address}'
-                        break
-            self.session.findById(id_path).Select()
-        except Exception as e:
-            print("The error $error has happened!".replace('$error', str(e)))
+        list_of_paths = path.split(';')
+        for active_path in list_of_paths:
+            children = self.session.findById(id_path).Children
+            for i in range(children.Count):
+                Obj = children(i)
+                if active_path in Obj.Text:
+                    menu_address = Obj.ID.split("/")[-1]
+                    id_path += f'/{menu_address}'
+                    break
+        self.session.findById(id_path).Select()
 
     # Saves a file in the SAP session.
     def save_file(self, file_name: str, path: str, option=0, type_of_file='txt'):
@@ -522,10 +497,7 @@ class SAP:
 
     # Retrieves a value from a cell
     def my_table_get_cell_value(self, my_table, row_index: int, column_index: int):
-        try:
-            return my_table.getCell(row_index, column_index).Text
-        except:
-            return 'Empty'
+        return my_table.getCell(row_index, column_index).Text
 
     # my_table tips:
     # VisibleRowCount => Count the number of Visible Rows in the table
