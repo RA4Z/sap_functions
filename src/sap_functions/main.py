@@ -2,8 +2,6 @@ import win32com.client
 import re
 import os
 import time
-import subprocess
-
 
 # SAP Scripting Documentation:
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/a2e9357389334dc89eecc1fb13999ee3.html
