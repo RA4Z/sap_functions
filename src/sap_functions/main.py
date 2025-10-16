@@ -556,8 +556,10 @@ class SAP:
     def get_my_table(self):
         try:
             self.window = self.__active_window()
-            if not self.__scroll_through_table(f'wnd[{self.window}]/usr'): 
+            my_table = self.__scroll_through_table(f'wnd[{self.window}]/usr')
+            if not my_table: 
                 raise Exception()
+            return my_table
         except:
             raise Exception("Get my table failed.")
         
@@ -575,8 +577,10 @@ class SAP:
     def get_my_grid(self):
         try:
             self.window = self.__active_window()
-            if not self.__scroll_through_grid(f'wnd[{self.window}]/usr'):
+            my_grid = self.__scroll_through_grid(f'wnd[{self.window}]/usr')
+            if not my_grid:
                 raise Exception()
+            return my_grid
         except:
             raise Exception("Get my grid failed.")
         
