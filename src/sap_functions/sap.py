@@ -4,6 +4,8 @@ import os
 import time
 import warnings
 from shell import Shell
+from table import Table
+
 # SAP Scripting Documentation:
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/a2e9357389334dc89eecc1fb13999ee3.html
 
@@ -585,9 +587,22 @@ class SAP:
             my_grid.SelectContextMenuItem("&PRINT_BACK_PREVIEW")
         except:
             raise Exception("View in list form failed.")
+    
+    def get_table(self):
+        try:
+            self.window = self.__active_window()
+            my_table = Table(self.__scroll_through_table(f'wnd[{self.window}]/usr'))
+            if not my_table: 
+                raise Exception()
+            return my_table
+        except:
+            raise Exception("Get table failed.")
         
     # Retrieves the table object within the SAP session.
     def get_my_table(self):
+        warnings.warn("Deprecated in 0.1. "
+                      "SAP.get_my_table will be removed in 1.0. "
+                      "Use SAP.get_table instead.", DeprecationWarning, stacklevel=2)
         try:
             self.window = self.__active_window()
             my_table = self.__scroll_through_table(f'wnd[{self.window}]/usr')
@@ -599,6 +614,9 @@ class SAP:
         
     # Retrieves a value from a cell
     def my_table_get_cell_value(self, my_table, row_index: int, column_index: int):
+        warnings.warn("Deprecated in 0.1. "
+                      "SAP.my_table_get_cell_value will be removed in 1.0. "
+                      "Use SAP.get_table and its respective methods instead.", DeprecationWarning, stacklevel=2)
         try:
             return my_table.getCell(row_index, column_index).Text
         except:
