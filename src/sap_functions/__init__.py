@@ -1,3 +1,4 @@
-from .main import SAP
+from .sap import SAP
+from .shell import Shell
 
-__all__ = ["SAP"]
+__all__ = ["SAP", "Shell"]

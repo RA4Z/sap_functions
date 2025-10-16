@@ -2,7 +2,8 @@ import win32com.client
 import re
 import os
 import time
-
+import warnings
+from shell import Shell
 # SAP Scripting Documentation:
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/a2e9357389334dc89eecc1fb13999ee3.html
 
@@ -69,6 +70,36 @@ class SAP:
                 return area
         return area
 
+    def __scroll_through_shell(self, extension):
+        if self.session.findById(extension).Type == 'GuiShell':
+            try:
+                var = self.session.findById(extension).RowCount
+                return self.session.findById(extension)
+            except:
+                pass
+        children = self.session.findById(extension).Children
+        result = False
+        for i in range(len(children)):
+            if result:
+                break
+            if children[i].Type == 'GuiCustomControl':
+                result = self.__scroll_through_shell(extension + '/cntl' + children[i].name)
+            if children[i].Type == 'GuiSimpleContainer':
+                result = self.__scroll_through_shell(extension + '/sub' + children[i].name)
+            if children[i].Type == 'GuiScrollContainer':
+                result = self.__scroll_through_shell(extension + '/ssub' + children[i].name)
+            if children[i].Type == 'GuiTableControl':
+                result = self.__scroll_through_shell(extension + '/tbl' + children[i].name)
+            if children[i].Type == 'GuiTab':
+                result = self.__scroll_through_shell(extension + '/tabp' + children[i].name)
+            if children[i].Type == 'GuiTabStrip':
+                result = self.__scroll_through_shell(extension + '/tabs' + children[i].name)
+            if children[
+                i].Type in ("GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar "
+                            "GuiUserArea GuiTitlebar"):
+                result = self.__scroll_through_shell(extension + '/' + children[i].name)
+        return result
+    
     # Scrolls through a grid based on its extension.
     def __scroll_through_grid(self, extension):
         if self.session.findById(extension).Type == 'GuiShell':
@@ -545,6 +576,9 @@ class SAP:
         
     # Views data in list form within the SAP session.
     def view_in_list_form(self):
+        warnings.warn("Deprecated in 0.1. "
+                      "SAP.view_in_list_form will be removed in 1.0. "
+                      "Use SAP.get_shell and its respective methods instead.", DeprecationWarning, stacklevel=2)
         try:
             my_grid = self.get_my_grid()
             my_grid.pressToolbarContextButton("&MB_VIEW")
@@ -573,8 +607,22 @@ class SAP:
     # VisibleRowCount => Count the number of Visible Rows in the table
     # RowCount => Count the number of Rows inside the table
 
+    # Retrieves the shell object within the SAP session.
+    def get_shell(self) -> Shell:
+        try:
+            self.window = self.__active_window()
+            shell = Shell(self.__scroll_through_shell(f'wnd[{self.window}]/usr'))
+            if not shell:
+                raise Exception()
+            return shell
+        except:
+            raise Exception("Get shell failed.")
+        
     # Retrieves the grid object within the SAP session.
     def get_my_grid(self):
+        warnings.warn("Deprecated in 0.1. "
+                      "SAP.get_my_grid will be removed in 1.0. "
+                      "Use SAP.get_shell instead.", DeprecationWarning, stacklevel=2)
         try:
             self.window = self.__active_window()
             my_grid = self.__scroll_through_grid(f'wnd[{self.window}]/usr')
@@ -586,6 +634,9 @@ class SAP:
         
     # Select a Layout after accesses the table
     def my_grid_select_layout(self, layout: str, skip_error=False):
+        warnings.warn("Deprecated in 0.1. "
+                      "SAP.my_grid_select_layout will be removed in 1.0. "
+                      "Use SAP.get_shell and its respective methods instead.", DeprecationWarning, stacklevel=2)
         try:
             my_grid = self.get_my_grid()
             my_grid.selectColumn("VARIANT")
@@ -602,6 +653,9 @@ class SAP:
         
     # Count the total number of rows inside the Grid
     def get_my_grid_count_rows(self, my_grid):
+        warnings.warn("Deprecated in 0.1. "
+                      "SAP.get_my_grid_count_rows will be removed in 1.0. "
+                      "Use SAP.get_shell and its respective methods instead.", DeprecationWarning, stacklevel=2)
         try:
             self.window = self.__active_window()
             rows = my_grid.RowCount
