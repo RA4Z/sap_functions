@@ -16,16 +16,17 @@ class SAP:
         self.desired_text = None
         self.field_name = None
         self.target_index = None
-        self.connection = self.__get_sap_connection()
 
-        if self.connection.Children(0).info.user == '':
+        connection = self.__get_sap_connection()
+
+        if connection.Children(0).info.user == '':
             raise Exception("SAP user is logged out!\nYou need to log in to SAP to run this script! Please log in and try again.")
 
-        if self.connection.Children(0).info.systemName == 'EQ0':
+        if connection.Children(0).info.systemName == 'EQ0':
             print("You're with SAP Quality Assurance open, (SAP QA)\nMany things may not happen as desired!")
 
-        self.__count_sap_screens(window)
-        self.session = self.connection.Children(window)
+        self.__count_and_create_sap_screens(window)
+        self.session = connection.Children(window)
         self.window = self.__active_window()
 
     # Verify if SAP is open
@@ -38,7 +39,7 @@ class SAP:
             raise Exception("SAP is not open!\nSAP must be open to run this script! Please, open it and try to run again.")
 
     # Count the number of open SAP screens
-    def __count_sap_screens(self, window: int):
+    def __count_and_create_sap_screens(self, window: int):
         while len(self.connection.sessions) < window + 1:
             self.connection.Children(0).createSession()
             time.sleep(3)
