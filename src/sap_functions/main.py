@@ -289,34 +289,43 @@ class SAP:
 
     # Selects a transaction within the SAP session.
     def select_transaction(self, transaction: str):
-        transaction_upper = transaction.upper()
-        self.session.startTransaction(transaction_upper)
-        if self.session.activeWindow.name == 'wnd[1]' and 'CN' in transaction_upper:
-            self.session.findById("wnd[1]/usr/ctxtTCNT-PROF_DB").Text = "000000000001"
-            self.session.findById("wnd[1]/tbar[0]/btn[0]").press()
-        if not self.session.info.transaction == transaction_upper:
+        try:
+            transaction_upper = transaction.upper()
+            self.session.startTransaction(transaction_upper)
+            if self.session.activeWindow.name == 'wnd[1]' and 'CN' in transaction_upper:
+                self.session.findById("wnd[1]/usr/ctxtTCNT-PROF_DB").Text = "000000000001"
+                self.session.findById("wnd[1]/tbar[0]/btn[0]").press()
+            if not self.session.info.transaction == transaction_upper:
+                raise Exception()
+        except:
             raise Exception("Select transaction failed.\n" + self.get_footer_message())
 
     # Selects the main screen of the SAP session.
-    def select_main_screen(self):
-        if not self.session.info.transaction == "SESSION_MANAGER":
-            self.session.startTransaction('SESSION_MANAGER')
-            if self.session.ActiveWindow.name == "wnd[1]":
-                self.session.findById("wnd[1]/tbar[0]/btn[0]").press()
-
+    def select_main_screen(self, skip_error=False):
+        try:
+            if not self.session.info.transaction == "SESSION_MANAGER":
+                self.session.startTransaction('SESSION_MANAGER')
+                if self.session.ActiveWindow.name == "wnd[1]":
+                    self.session.findById("wnd[1]/tbar[0]/btn[0]").press()
+        except:
+            if not skip_error: raise Exception("Select main screen failed.")
+        
     # Cleans all fields within the SAP session.
-    def clean_all_fields(self, selected_tab=0):
-        self.window = self.__active_window()
-        area = self.__scroll_through_tabs(self.session.findById(f"wnd[{self.window}]/usr"), f"wnd[{self.window}]/usr",
-                                          selected_tab)
-        children = area.Children
-        for child in children:
-            if child.Type == "GuiCTextField":
-                try:
-                    child.Text = ""
-                except:
-                    pass
-
+    def clean_all_fields(self, selected_tab=0, skip_error=False):
+        try:
+            self.window = self.__active_window()
+            area = self.__scroll_through_tabs(self.session.findById(f"wnd[{self.window}]/usr"), f"wnd[{self.window}]/usr",
+                                            selected_tab)
+            children = area.Children
+            for child in children:
+                if child.Type == "GuiCTextField":
+                    try:
+                        child.Text = ""
+                    except:
+                        pass
+        except:
+            if not skip_error: raise Exception("Clean all fields failed.")
+        
     # Run the active transaction in the SAP screen
     def run_actual_transaction(self):
         try:
@@ -329,17 +338,20 @@ class SAP:
             raise Exception("Run actual transaction failed.")
         
     # Inserts a variant into the SAP session.
-    def insert_variant(self, variant_name: str):
-        self.session.findById("wnd[0]/tbar[1]/btn[17]").press()
-        if self.session.activeWindow.name == 'wnd[1]':
-            self.session.findById("wnd[1]/usr/txtV-LOW").Text = variant_name
-            self.session.findById("wnd[1]/usr/txtENAME-LOW").Text = ""
-            self.session.findById("wnd[1]/tbar[0]/btn[8]").press()
-            if self.session.activewindow.name == 'wnd[1]':
-                raise Exception("Insert variant failed.")
+    def insert_variant(self, variant_name: str, skip_error=False):
+        try:    
+            self.session.findById("wnd[0]/tbar[1]/btn[17]").press()
+            if self.session.activeWindow.name == 'wnd[1]':
+                self.session.findById("wnd[1]/usr/txtV-LOW").Text = variant_name
+                self.session.findById("wnd[1]/usr/txtENAME-LOW").Text = ""
+                self.session.findById("wnd[1]/tbar[0]/btn[8]").press()
+                if self.session.activewindow.name == 'wnd[1]':
+                    raise Exception()
+        except:
+            if not skip_error: raise Exception("Insert variant failed.")
 
     # Changes the active tab within the SAP session.
-    def change_active_tab(self, selected_tab: int):
+    def change_active_tab(self, selected_tab: int, skip_error=False):
         try:
             self.window = self.__active_window()
             
@@ -350,10 +362,10 @@ class SAP:
             except:
                 pass
         except:
-            raise Exception("Change active tab failed.")    
+            if not skip_error: raise Exception("Change active tab failed.")    
         
     # Writes text into a text field within the SAP session.
-    def write_text_field(self, field_name: str, desired_text: str, target_index=0, selected_tab=0):
+    def write_text_field(self, field_name: str, desired_text: str, target_index=0, selected_tab=0, skip_error=False):
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -364,10 +376,10 @@ class SAP:
             if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'write_text_field', selected_tab):
                 raise Exception()
         except:
-            raise Exception("Write text field failed.")
+            if not skip_error: raise Exception("Write text field failed.")
         
     # Writes text into a text field until a certain index within the SAP session.
-    def write_text_field_until(self, field_name: str, desired_text: str, target_index=0, selected_tab=0):
+    def write_text_field_until(self, field_name: str, desired_text: str, target_index=0, selected_tab=0, skip_error=False):
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -378,10 +390,10 @@ class SAP:
             if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'write_text_field_until', selected_tab):
                 raise Exception()
         except:
-            raise Exception("Write text field until failed.")
+            if not skip_error: raise Exception("Write text field until failed.")
         
     # Choose an option inside a SAP combo box
-    def choose_text_combo(self, field_name: str, desired_text: str, target_index=0, selected_tab=0):
+    def choose_text_combo(self, field_name: str, desired_text: str, target_index=0, selected_tab=0, skip_error=False):
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -392,10 +404,10 @@ class SAP:
             if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'choose_text_combo', selected_tab):
                 raise Exception()
         except:
-            raise Exception("Choose text combo failed.")
+            if not skip_error: raise Exception("Choose text combo failed.")
         
     # Flags a field within the SAP session.
-    def flag_field(self, field_name: str, desired_operator: bool, target_index=0, selected_tab=0):
+    def flag_field(self, field_name: str, desired_operator: bool, target_index=0, selected_tab=0, skip_error=False):
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -406,10 +418,10 @@ class SAP:
             if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'flag_field', selected_tab):
                 raise Exception()
         except:
-            raise Exception("Flag field failed.")
+            if not skip_error: raise Exception("Flag field failed.")
 
     # Flags a field within the SAP session.
-    def flag_field_at_side(self, field_name: str, desired_operator: bool, side_index=0, target_index=0, selected_tab=0):
+    def flag_field_at_side(self, field_name: str, desired_operator: bool, side_index=0, target_index=0, selected_tab=0, skip_error=False):
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -421,10 +433,10 @@ class SAP:
             if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'flag_field_at_side', selected_tab):
                 raise Exception()
         except:
-            raise Exception("Flag field at side failed.")
+            if not skip_error: raise Exception("Flag field at side failed.")
         
     # Selects an option within a field in the SAP session.
-    def option_field(self, field_name: str, target_index=0, selected_tab=0):
+    def option_field(self, field_name: str, target_index=0, selected_tab=0, skip_error=False):
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -434,10 +446,10 @@ class SAP:
             if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'option_field', selected_tab):
                 raise Exception()
         except:
-            raise Exception("Option field failed.")
+            if not skip_error: raise Exception("Option field failed.")
 
     # Presses a button within the SAP session.
-    def press_button(self, field_name: str, target_index=0, selected_tab=0):
+    def press_button(self, field_name: str, target_index=0, selected_tab=0, skip_error=False):
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -447,10 +459,10 @@ class SAP:
             if not self.__scroll_through_fields(f"wnd[{self.window}]", 'press_button', selected_tab):
                 raise Exception()
         except:
-            raise Exception("Press button failed.")
+            if not skip_error: raise Exception("Press button failed.")
 
     # Selects multiple entries within a field in the SAP session.
-    def multiple_selection_field(self, field_name: str, target_index=0, selected_tab=0):
+    def multiple_selection_field(self, field_name: str, target_index=0, selected_tab=0, skip_error=False):
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -460,7 +472,7 @@ class SAP:
             if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'multiple_selection_field', selected_tab):
                 raise Exception()
         except:
-            raise Exception("Multiple selection field failed.")
+            if not skip_error: raise Exception("Multiple selection field failed.")
 
     # Finds a text field within the SAP session.
     def find_text_field(self, field_name: str, selected_tab=0):
@@ -482,17 +494,20 @@ class SAP:
             return self.found_text
 
     # Pastes data into multiple selection fields in the SAP session.
-    def multiple_selection_paste_data(self, data: str):
-        with open('C:/Temp/temp_paste.txt', 'w') as arquivo:
-            arquivo.write(data)
-        self.session.findById("wnd[1]/tbar[0]/btn[23]").press()
-        self.session.findById("wnd[2]/usr/ctxtDY_PATH").text = 'C:/Temp'
-        self.session.findById("wnd[2]/usr/ctxtDY_FILENAME").text = "temp_paste.txt"
-        self.session.findById("wnd[2]/tbar[0]/btn[0]").press()
-        self.session.findById("wnd[1]/tbar[0]/btn[8]").press()
-        if os.path.exists('C:/Temp/temp_paste.txt'):
-            os.remove('C:/Temp/temp_paste.txt')
-
+    def multiple_selection_paste_data(self, data: str, skip_error=False):
+        try:
+            with open('C:/Temp/temp_paste.txt', 'w') as arquivo:
+                arquivo.write(data)
+            self.session.findById("wnd[1]/tbar[0]/btn[23]").press()
+            self.session.findById("wnd[2]/usr/ctxtDY_PATH").text = 'C:/Temp'
+            self.session.findById("wnd[2]/usr/ctxtDY_FILENAME").text = "temp_paste.txt"
+            self.session.findById("wnd[2]/tbar[0]/btn[0]").press()
+            self.session.findById("wnd[1]/tbar[0]/btn[8]").press()
+            if os.path.exists('C:/Temp/temp_paste.txt'):
+                os.remove('C:/Temp/temp_paste.txt')
+        except:
+            if not skip_error: raise Exception("Multiple selection paste data failed.")
+    
     # Navigate around the menu in the SAP header
     def navigate_into_menu_header(self, path: str):
         id_path = 'wnd[0]/mbar'
@@ -511,7 +526,7 @@ class SAP:
         self.session.findById(id_path).Select()
 
     # Saves a file in the SAP session.
-    def save_file(self, file_name: str, path: str, option=0, type_of_file='txt'):
+    def save_file(self, file_name: str, path: str, option=0, type_of_file='txt', skip_error=False):
         try:
             if 'xls' in type_of_file:
                 self.session.findById("wnd[0]/mbar/menu[0]/menu[1]/menu[1]").Select()
@@ -526,7 +541,7 @@ class SAP:
             self.session.findById("wnd[1]/usr/ctxtDY_FILENAME").Text = f'{file_name}.{type_of_file}'
             self.session.findById("wnd[1]/tbar[0]/btn[11]").press()
         except:
-            raise Exception("Save file failed.")
+            if not skip_error: raise Exception("Save file failed.")
         
     # Views data in list form within the SAP session.
     def view_in_list_form(self):
@@ -551,7 +566,7 @@ class SAP:
         try:
             return my_table.getCell(row_index, column_index).Text
         except:
-            raise Exception
+            raise Exception("My table get cell value failed.")
     # my_table tips:
     # VisibleRowCount => Count the number of Visible Rows in the table
     # RowCount => Count the number of Rows inside the table
@@ -566,7 +581,7 @@ class SAP:
             raise Exception("Get my grid failed.")
         
     # Select a Layout after accesses the table
-    def my_grid_select_layout(self, layout: str):
+    def my_grid_select_layout(self, layout: str, skip_error=False):
         try:
             my_grid = self.get_my_grid()
             my_grid.selectColumn("VARIANT")
@@ -579,7 +594,7 @@ class SAP:
             self.session.findById(
                 "wnd[1]/usr/ssubD0500_SUBSCREEN:SAPLSLVC_DIALOG:0501/cntlG51_CONTAINER/shellcont/shell").clickCurrentCell()
         except:
-            raise Exception("My grid select layout failed.")
+            if not skip_error: raise Exception("My grid select layout failed.")
         
     # Count the total number of rows inside the Grid
     def get_my_grid_count_rows(self, my_grid):
