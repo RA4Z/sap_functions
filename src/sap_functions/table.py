@@ -1,7 +1,17 @@
+import re
+
+
 class Table:
     def __init__(self, table, session):
         self.table_obj = table
         self.session = session
+        self.window = self.__active_window()
+
+    def __active_window(self) -> int:
+        regex = re.compile('[0-9]')
+        matches = regex.findall(self.session.ActiveWindow.name)
+        for match in matches:
+            return int(match)
 
     def __scroll_through_table(self, extension):
         if 'tbl' in extension:
@@ -39,16 +49,52 @@ class Table:
             if not skip_error:
                 raise Exception("Get cell value failed.")
 
-    def write_cell_value(self, row: int, column: int, desired_text: str, skip_error: bool = False):
+    def count_visible_rows(self, skip_error: bool = False) -> int:
         try:
-            self.table_obj.getCell(row, column).text = desired_text
+            return self.table_obj.visibleRowCount
         except:
             if not skip_error:
                 raise Exception("Get cell value failed.")
 
+    def write_cell_value(self, row: int, column: int, desired_text: str, skip_error: bool = False) -> None:
+        try:
+            self.table_obj.getCell(row, column).text = desired_text
+        except:
+            if not skip_error:
+                raise Exception("Write cell value failed.")
+
+    def select_entire_row(self, absolute_row: int, skip_error: bool = False) -> None:
+        try:
+            self.table_obj.GetAbsoluteRow(absolute_row).selected = True
+        except:
+            if not skip_error:
+                raise Exception("Click Cell Failed.")
+
+    def unselect_entire_row(self, absolute_row: int, skip_error: bool = False) -> None:
+        try:
+            self.table_obj.GetAbsoluteRow(absolute_row).selected = False
+        except:
+            if not skip_error:
+                raise Exception("Click Cell Failed.")
+
+    def flag_cell(self, row: int, column: int, desired_operator: bool, skip_error: bool = False) -> None:
+        try:
+            self.table_obj.getCell(row, column).Selected = desired_operator
+        except:
+            if not skip_error:
+                raise Exception("Flag Cell Failed.")
+
+    def click_cell(self, row: int, column: int, skip_error: bool = False) -> None:
+        try:
+            self.table_obj.getCell(row, column).SetFocus()
+            self.session.findById(f"wnd[{self.window}]").sendVKey(2)
+        except:
+            if not skip_error:
+                raise Exception("Click Cell Failed.")
+
     def get_table_content(self, skip_error: bool = False):
         try:
-            obj_now = self.__scroll_through_table(f'wnd[0]/usr')
+            obj_now = self.__scroll_through_table(f'wnd[{self.window}]/usr')
             added_rows = []
 
             header = []
@@ -78,8 +124,8 @@ class Table:
                         added_rows.append(absolute_row)
                         content.append(active_row)
 
-                self.session.findById("wnd[0]").sendVKey(82)
-                obj_now = self.__scroll_through_table(f'wnd[0]/usr')
+                self.session.findById(f"wnd[{self.window}]").sendVKey(82)
+                obj_now = self.__scroll_through_table(f'wnd[{self.window}]/usr')
             return {'header': header, 'content': content}
 
         except:
