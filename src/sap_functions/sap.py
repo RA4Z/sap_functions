@@ -607,9 +607,12 @@ class SAP:
     def get_shell(self) -> Shell:
         try:
             self.window = self.__active_window()
-            shell = Shell(self.__scroll_through_shell(f'wnd[{self.window}]/usr'), self.session)
-            if not shell:
+            shell_obj = self.__scroll_through_shell(f'wnd[{self.window}]/usr')
+            
+            if not shell_obj:
                 raise Exception()
+            
+            shell = Shell(shell_obj, self.session)
             return shell
         except:
             raise Exception("Get shell failed.")
