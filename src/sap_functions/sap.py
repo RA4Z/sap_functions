@@ -2,6 +2,10 @@ import win32com.client
 import re
 import os
 import time
+import warnings
+from shell import Shell
+from table import Table
+
 
 # SAP Scripting Documentation:
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/a2e9357389334dc89eecc1fb13999ee3.html
@@ -36,7 +40,8 @@ class SAP:
             application = sapguiauto.GetScriptingEngine
             return application.Children(0)
         except:
-            raise Exception("SAP is not open!\nSAP must be open to run this script! Please, open it and try to run again.")
+            raise Exception(
+                "SAP is not open!\nSAP must be open to run this script! Please, open it and try to run again.")
 
     # Count the number of open SAP screens
     def __count_and_create_sap_screens(self, window: int):
@@ -69,6 +74,36 @@ class SAP:
                 area = self.session.findById(extension)
                 return area
         return area
+
+    def __scroll_through_shell(self, extension):
+        if self.session.findById(extension).Type == 'GuiShell':
+            try:
+                var = self.session.findById(extension).RowCount
+                return self.session.findById(extension)
+            except:
+                pass
+        children = self.session.findById(extension).Children
+        result = False
+        for i in range(len(children)):
+            if result:
+                break
+            if children[i].Type == 'GuiCustomControl':
+                result = self.__scroll_through_shell(extension + '/cntl' + children[i].name)
+            if children[i].Type == 'GuiSimpleContainer':
+                result = self.__scroll_through_shell(extension + '/sub' + children[i].name)
+            if children[i].Type == 'GuiScrollContainer':
+                result = self.__scroll_through_shell(extension + '/ssub' + children[i].name)
+            if children[i].Type == 'GuiTableControl':
+                result = self.__scroll_through_shell(extension + '/tbl' + children[i].name)
+            if children[i].Type == 'GuiTab':
+                result = self.__scroll_through_shell(extension + '/tabp' + children[i].name)
+            if children[i].Type == 'GuiTabStrip':
+                result = self.__scroll_through_shell(extension + '/tabs' + children[i].name)
+            if children[
+                i].Type in ("GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar "
+                            "GuiUserArea GuiTitlebar"):
+                result = self.__scroll_through_shell(extension + '/' + children[i].name)
+        return result
 
     # Scrolls through a grid based on its extension.
     def __scroll_through_grid(self, extension):
@@ -146,18 +181,20 @@ class SAP:
                 result = self.__scroll_through_fields(extension + "/tabs" + children[i].name, objective, selected_tab)
 
             if not result and children[i].Type == "GuiTab" and 'tabp' not in extension:
-                result = self.__scroll_through_fields(extension + "/tabp" + str(children[selected_tab].name), objective, selected_tab)
+                result = self.__scroll_through_fields(extension + "/tabp" + str(children[selected_tab].name), objective,
+                                                      selected_tab)
 
             if not result and children[i].Type == "GuiSimpleContainer":
                 result = self.__scroll_through_fields(extension + "/sub" + children[i].name, objective, selected_tab)
 
             if not result and children[i].Type == "GuiScrollContainer":
                 result = self.__scroll_through_fields(extension + "/ssub" + children[i].name, objective, selected_tab)
-                
+
             if not result and children[i].Type == "GuiCustomControl":
                 result = self.__scroll_through_fields(extension + "/cntl" + children[i].name, objective, selected_tab)
 
-            if not result and children[i].Type in ("GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar GuiUserArea GuiTitlebar"):
+            if not result and children[i].Type in (
+            "GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar GuiUserArea GuiTitlebar"):
                 result = self.__scroll_through_fields(extension + "/" + children[i].name, objective, selected_tab)
 
         return result
@@ -310,13 +347,14 @@ class SAP:
                     self.session.findById("wnd[1]/tbar[0]/btn[0]").press()
         except:
             if not skip_error: raise Exception("Select main screen failed.")
-        
+
     # Cleans all fields within the SAP session.
     def clean_all_fields(self, selected_tab=0, skip_error=False):
         try:
             self.window = self.__active_window()
-            area = self.__scroll_through_tabs(self.session.findById(f"wnd[{self.window}]/usr"), f"wnd[{self.window}]/usr",
-                                            selected_tab)
+            area = self.__scroll_through_tabs(self.session.findById(f"wnd[{self.window}]/usr"),
+                                              f"wnd[{self.window}]/usr",
+                                              selected_tab)
             children = area.Children
             for child in children:
                 if child.Type == "GuiCTextField":
@@ -326,21 +364,21 @@ class SAP:
                         pass
         except:
             if not skip_error: raise Exception("Clean all fields failed.")
-        
+
     # Run the active transaction in the SAP screen
     def run_actual_transaction(self):
         try:
             self.window = self.__active_window()
             screen_title = self.session.activeWindow.text
             self.session.findById(f'wnd[{self.window}]').sendVKey(0)
-            if screen_title == self.session.activeWindow.text: 
+            if screen_title == self.session.activeWindow.text:
                 self.session.findById(f'wnd[{self.window}]').sendVKey(8)
         except:
             raise Exception("Run actual transaction failed.")
-        
+
     # Inserts a variant into the SAP session.
     def insert_variant(self, variant_name: str, skip_error=False):
-        try:    
+        try:
             self.session.findById("wnd[0]/tbar[1]/btn[17]").press()
             if self.session.activeWindow.name == 'wnd[1]':
                 self.session.findById("wnd[1]/usr/txtV-LOW").Text = variant_name
@@ -355,17 +393,19 @@ class SAP:
     def change_active_tab(self, selected_tab: int, skip_error=False):
         try:
             self.window = self.__active_window()
-            
-            area = self.__scroll_through_tabs(self.session.findById(f"wnd[{self.window}]/usr"), f"wnd[{self.window}]/usr",
-                                                selected_tab)
+
+            area = self.__scroll_through_tabs(self.session.findById(f"wnd[{self.window}]/usr"),
+                                              f"wnd[{self.window}]/usr",
+                                              selected_tab)
             try:
                 area.Select()
             except:
                 pass
         except:
-            if not skip_error: raise Exception("Change active tab failed.")    
-        
-    # Writes text into a text field within the SAP session.
+            if not skip_error: raise Exception("Change active tab failed.")
+
+            # Writes text into a text field within the SAP session.
+
     def write_text_field(self, field_name: str, desired_text: str, target_index=0, selected_tab=0, skip_error=False):
         try:
             self.window = self.__active_window()
@@ -378,9 +418,10 @@ class SAP:
                 raise Exception()
         except:
             if not skip_error: raise Exception("Write text field failed.")
-        
+
     # Writes text into a text field until a certain index within the SAP session.
-    def write_text_field_until(self, field_name: str, desired_text: str, target_index=0, selected_tab=0, skip_error=False):
+    def write_text_field_until(self, field_name: str, desired_text: str, target_index=0, selected_tab=0,
+                               skip_error=False):
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -392,7 +433,7 @@ class SAP:
                 raise Exception()
         except:
             if not skip_error: raise Exception("Write text field until failed.")
-        
+
     # Choose an option inside a SAP combo box
     def choose_text_combo(self, field_name: str, desired_text: str, target_index=0, selected_tab=0, skip_error=False):
         try:
@@ -406,7 +447,7 @@ class SAP:
                 raise Exception()
         except:
             if not skip_error: raise Exception("Choose text combo failed.")
-        
+
     # Flags a field within the SAP session.
     def flag_field(self, field_name: str, desired_operator: bool, target_index=0, selected_tab=0, skip_error=False):
         try:
@@ -422,7 +463,8 @@ class SAP:
             if not skip_error: raise Exception("Flag field failed.")
 
     # Flags a field within the SAP session.
-    def flag_field_at_side(self, field_name: str, desired_operator: bool, side_index=0, target_index=0, selected_tab=0, skip_error=False):
+    def flag_field_at_side(self, field_name: str, desired_operator: bool, side_index=0, target_index=0, selected_tab=0,
+                           skip_error=False):
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -435,7 +477,7 @@ class SAP:
                 raise Exception()
         except:
             if not skip_error: raise Exception("Flag field at side failed.")
-        
+
     # Selects an option within a field in the SAP session.
     def option_field(self, field_name: str, target_index=0, selected_tab=0, skip_error=False):
         try:
@@ -508,7 +550,7 @@ class SAP:
                 os.remove('C:/Temp/temp_paste.txt')
         except:
             if not skip_error: raise Exception("Multiple selection paste data failed.")
-    
+
     # Navigate around the menu in the SAP header
     def navigate_into_menu_header(self, path: str):
         id_path = 'wnd[0]/mbar'
@@ -543,39 +585,73 @@ class SAP:
             self.session.findById("wnd[1]/tbar[0]/btn[11]").press()
         except:
             if not skip_error: raise Exception("Save file failed.")
-        
+
     # Views data in list form within the SAP session.
     def view_in_list_form(self):
+        warnings.warn("Deprecated in 0.1. "
+                      "SAP.view_in_list_form will be removed in 1.0. "
+                      "Use SAP.get_shell and its respective methods instead.", DeprecationWarning, stacklevel=2)
         try:
             my_grid = self.get_my_grid()
             my_grid.pressToolbarContextButton("&MB_VIEW")
             my_grid.SelectContextMenuItem("&PRINT_BACK_PREVIEW")
         except:
             raise Exception("View in list form failed.")
-        
+
+    def get_table(self):
+        try:
+            self.window = self.__active_window()
+            my_table = Table(self.__scroll_through_table(f'wnd[{self.window}]/usr'))
+            if not my_table:
+                raise Exception()
+            return my_table
+        except:
+            raise Exception("Get table failed.")
+
     # Retrieves the table object within the SAP session.
     def get_my_table(self):
+        warnings.warn("Deprecated in 0.1. "
+                      "SAP.get_my_table will be removed in 1.0. "
+                      "Use SAP.get_table instead.", DeprecationWarning, stacklevel=2)
         try:
             self.window = self.__active_window()
             my_table = self.__scroll_through_table(f'wnd[{self.window}]/usr')
-            if not my_table: 
+            if not my_table:
                 raise Exception()
             return my_table
         except:
             raise Exception("Get my table failed.")
-        
+
     # Retrieves a value from a cell
     def my_table_get_cell_value(self, my_table, row_index: int, column_index: int):
+        warnings.warn("Deprecated in 0.1. "
+                      "SAP.my_table_get_cell_value will be removed in 1.0. "
+                      "Use SAP.get_table and its respective methods instead.", DeprecationWarning, stacklevel=2)
         try:
             return my_table.getCell(row_index, column_index).Text
         except:
             raise Exception("My table get cell value failed.")
+
     # my_table tips:
     # VisibleRowCount => Count the number of Visible Rows in the table
     # RowCount => Count the number of Rows inside the table
 
+    # Retrieves the shell object within the SAP session.
+    def get_shell(self) -> Shell:
+        try:
+            self.window = self.__active_window()
+            shell = Shell(self.__scroll_through_shell(f'wnd[{self.window}]/usr'), self.session)
+            if not shell:
+                raise Exception()
+            return shell
+        except:
+            raise Exception("Get shell failed.")
+
     # Retrieves the grid object within the SAP session.
     def get_my_grid(self):
+        warnings.warn("Deprecated in 0.1. "
+                      "SAP.get_my_grid will be removed in 1.0. "
+                      "Use SAP.get_shell instead.", DeprecationWarning, stacklevel=2)
         try:
             self.window = self.__active_window()
             my_grid = self.__scroll_through_grid(f'wnd[{self.window}]/usr')
@@ -584,9 +660,12 @@ class SAP:
             return my_grid
         except:
             raise Exception("Get my grid failed.")
-        
+
     # Select a Layout after accesses the table
     def my_grid_select_layout(self, layout: str, skip_error=False):
+        warnings.warn("Deprecated in 0.1. "
+                      "SAP.my_grid_select_layout will be removed in 1.0. "
+                      "Use SAP.get_shell and its respective methods instead.", DeprecationWarning, stacklevel=2)
         try:
             my_grid = self.get_my_grid()
             my_grid.selectColumn("VARIANT")
@@ -600,9 +679,12 @@ class SAP:
                 "wnd[1]/usr/ssubD0500_SUBSCREEN:SAPLSLVC_DIALOG:0501/cntlG51_CONTAINER/shellcont/shell").clickCurrentCell()
         except:
             if not skip_error: raise Exception("My grid select layout failed.")
-        
+
     # Count the total number of rows inside the Grid
     def get_my_grid_count_rows(self, my_grid):
+        warnings.warn("Deprecated in 0.1. "
+                      "SAP.get_my_grid_count_rows will be removed in 1.0. "
+                      "Use SAP.get_shell and its respective methods instead.", DeprecationWarning, stacklevel=2)
         try:
             self.window = self.__active_window()
             rows = my_grid.RowCount
@@ -621,10 +703,10 @@ class SAP:
             return rows
         except:
             raise Exception("Get my grid count rows failed.")
-        
+
     # Retrieves the footer message within the SAP session.
     def get_footer_message(self):
         try:
-            return self.session.findById("wnd[0]/sbar").Text    
+            return self.session.findById("wnd[0]/sbar").Text
         except:
             raise Exception("Get footer message failed.")
