@@ -3,8 +3,8 @@ import re
 import os
 import time
 import warnings
-from shell import Shell
-from table import Table
+from .shell import Shell
+from .table import Table
 from typing import Union
 
 # SAP Scripting Documentation:

@@ -1,15 +1,60 @@
 import win32com
+from typing import Union
+import re
 
 class Shell:
     def __init__(self, shell_obj: win32com.client.CDispatch, session: win32com.client.CDispatch):
         self.shell_obj = shell_obj
         self.session = session
+        self.window = self.__active_window()
 
+    def __active_window(self) -> int:
+        regex = re.compile('[0-9]')
+        matches = regex.findall(self.session.ActiveWindow.name)
+        for match in matches:
+            return int(match)
+        
+    def __scroll_through_shell(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
+        if self.session.findById(extension).Type == 'GuiShell':
+            try:
+                var = self.session.findById(extension).RowCount
+                return self.session.findById(extension)
+            except:
+                pass
+        children = self.session.findById(extension).Children
+        result = False
+        for i in range(len(children)):
+            if result:
+                break
+            if children[i].Type == 'GuiCustomControl':
+                result = self.__scroll_through_shell(extension + '/cntl' + children[i].name)
+            if children[i].Type == 'GuiSimpleContainer':
+                result = self.__scroll_through_shell(extension + '/sub' + children[i].name)
+            if children[i].Type == 'GuiScrollContainer':
+                result = self.__scroll_through_shell(extension + '/ssub' + children[i].name)
+            if children[i].Type == 'GuiTableControl':
+                result = self.__scroll_through_shell(extension + '/tbl' + children[i].name)
+            if children[i].Type == 'GuiTab':
+                result = self.__scroll_through_shell(extension + '/tabp' + children[i].name)
+            if children[i].Type == 'GuiTabStrip':
+                result = self.__scroll_through_shell(extension + '/tabs' + children[i].name)
+            if children[
+                i].Type in ("GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar "
+                            "GuiUserArea GuiTitlebar"):
+                result = self.__scroll_through_shell(extension + '/' + children[i].name)
+        return result
+    
     def select_layout(self, layout: str) -> None:
         try:
-            self.shell_obj.selectColumn("VARIANT")
-            self.shell_obj.contextMenu()
-            self.shell_obj.selectContextMenuItem("&FILTER")
+            window = self.__active_window()
+            shell_layout_obj = self.__scroll_through_shell(f'wnd[{window}]/usr')
+
+            if not shell_layout_obj:
+                raise Exception()
+
+            shell_layout_obj.selectColumn("VARIANT")
+            shell_layout_obj.contextMenu()
+            shell_layout_obj.selectContextMenuItem("&FILTER")
             self.session.findById("wnd[2]/usr/ssub%_SUBSCREEN_FREESEL:SAPLSSEL:1105/ctxt%%DYN001-LOW").text = layout
             self.session.findById("wnd[2]/tbar[0]/btn[0]").press()
             self.session.findById(
