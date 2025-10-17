@@ -7,6 +7,7 @@ from shell import Shell
 from table import Table
 from typing import Union
 
+
 # SAP Scripting Documentation:
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/a2e9357389334dc89eecc1fb13999ee3.html
 
@@ -23,7 +24,8 @@ class SAP:
         connection = self.__get_sap_connection()
 
         if connection.Children(0).info.user == '':
-            raise Exception("SAP user is logged out!\nYou need to log in to SAP to run this script! Please log in and try again.")
+            raise Exception(
+                "SAP user is logged out!\nYou need to log in to SAP to run this script! Please log in and try again.")
 
         if connection.Children(0).info.systemName == 'EQ0':
             print("You're with SAP Quality Assurance open, (SAP QA)\nMany things may not happen as desired!")
@@ -41,7 +43,7 @@ class SAP:
             raise Exception(
                 "SAP is not open!\nSAP must be open to run this script! Please, open it and try to run again.")
 
-    def __count_and_create_sap_screens(self, connection:win32com.client.CDispatch, window: int):
+    def __count_and_create_sap_screens(self, connection: win32com.client.CDispatch, window: int):
         while len(connection.sessions) < window + 1:
             connection.Children(0).createSession()
             time.sleep(3)
@@ -52,7 +54,8 @@ class SAP:
         for match in matches:
             return int(match)
 
-    def __scroll_through_tabs(self, area: win32com.client.CDispatch, extension: str, selected_tab: int) -> win32com.client.CDispatch:
+    def __scroll_through_tabs(self, area: win32com.client.CDispatch, extension: str,
+                              selected_tab: int) -> win32com.client.CDispatch:
         children = area.Children
         for child in children:
             if child.Type == "GuiTabStrip":
@@ -186,7 +189,7 @@ class SAP:
                 result = self.__scroll_through_fields(extension + "/cntl" + children[i].name, objective, selected_tab)
 
             if not result and children[i].Type in (
-            "GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar GuiUserArea GuiTitlebar"):
+                    "GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar GuiUserArea GuiTitlebar"):
                 result = self.__scroll_through_fields(extension + "/" + children[i].name, objective, selected_tab)
 
         return result
@@ -318,6 +321,10 @@ class SAP:
         return False
 
     def select_transaction(self, transaction: str) -> None:
+        """
+        Navigate to a transaction in SAP GUI
+        :param transaction: The name of the desired transaction
+        """
         try:
             transaction_upper = transaction.upper()
             self.session.startTransaction(transaction_upper)
@@ -330,6 +337,10 @@ class SAP:
             raise Exception("Select transaction failed.\n" + self.get_footer_message())
 
     def select_main_screen(self, skip_error: bool = False) -> None:
+        """
+        Navigate to the SAP main Screen
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             if not self.session.info.transaction == "SESSION_MANAGER":
                 self.session.startTransaction('SESSION_MANAGER')
@@ -338,7 +349,12 @@ class SAP:
         except:
             if not skip_error: raise Exception("Select main screen failed.")
 
-    def clean_all_fields(self, selected_tab: int = 0, skip_error = False) -> None:
+    def clean_all_fields(self, selected_tab: int = 0, skip_error=False) -> None:
+        """
+        Clean all the input fields in the actual screen
+        :param selected_tab: Transaction desired tab
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             self.window = self.__active_window()
             area = self.__scroll_through_tabs(self.session.findById(f"wnd[{self.window}]/usr"),
@@ -390,8 +406,8 @@ class SAP:
         except:
             if not skip_error: raise Exception("Change active tab failed.")
 
-
-    def write_text_field(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def write_text_field(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0,
+                         skip_error: bool = False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -404,7 +420,8 @@ class SAP:
         except:
             if not skip_error: raise Exception("Write text field failed.")
 
-    def write_text_field_until(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def write_text_field_until(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0,
+                               skip_error: bool = False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -417,7 +434,8 @@ class SAP:
         except:
             if not skip_error: raise Exception("Write text field until failed.")
 
-    def choose_text_combo(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def choose_text_combo(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0,
+                          skip_error: bool = False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -430,7 +448,8 @@ class SAP:
         except:
             if not skip_error: raise Exception("Choose text combo failed.")
 
-    def flag_field(self, field_name: str, desired_operator: bool, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def flag_field(self, field_name: str, desired_operator: bool, target_index: int = 0, selected_tab: int = 0,
+                   skip_error: bool = False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -443,7 +462,8 @@ class SAP:
         except:
             if not skip_error: raise Exception("Flag field failed.")
 
-    def flag_field_at_side(self, field_name: str, desired_operator: bool, side_index: int = 0, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def flag_field_at_side(self, field_name: str, desired_operator: bool, side_index: int = 0, target_index: int = 0,
+                           selected_tab: int = 0, skip_error: bool = False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -457,7 +477,8 @@ class SAP:
         except:
             if not skip_error: raise Exception("Flag field at side failed.")
 
-    def option_field(self, field_name: str, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def option_field(self, field_name: str, target_index: int = 0, selected_tab: int = 0,
+                     skip_error: bool = False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -469,7 +490,8 @@ class SAP:
         except:
             if not skip_error: raise Exception("Option field failed.")
 
-    def press_button(self, field_name: str, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def press_button(self, field_name: str, target_index: int = 0, selected_tab: int = 0,
+                     skip_error: bool = False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -481,7 +503,8 @@ class SAP:
         except:
             if not skip_error: raise Exception("Press button failed.")
 
-    def multiple_selection_field(self, field_name: str, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def multiple_selection_field(self, field_name: str, target_index: int = 0, selected_tab: int = 0,
+                                 skip_error: bool = False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -540,7 +563,8 @@ class SAP:
                     break
         self.session.findById(id_path).Select()
 
-    def save_file(self, file_name: str, path: str, option: int = 0, type_of_file: str = 'txt', skip_error: bool = False) -> None:
+    def save_file(self, file_name: str, path: str, option: int = 0, type_of_file: str = 'txt',
+                  skip_error: bool = False) -> None:
         try:
             if 'xls' in type_of_file:
                 self.session.findById("wnd[0]/mbar/menu[0]/menu[1]/menu[1]").Select()
@@ -609,10 +633,10 @@ class SAP:
         try:
             self.window = self.__active_window()
             shell_obj = self.__scroll_through_shell(f'wnd[{self.window}]/usr')
-            
+
             if not shell_obj:
                 raise Exception()
-            
+
             shell = Shell(shell_obj, self.session)
             return shell
         except:
