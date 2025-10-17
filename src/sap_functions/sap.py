@@ -5,7 +5,7 @@ import time
 import warnings
 from shell import Shell
 from table import Table
-
+from typing import Union
 
 # SAP Scripting Documentation:
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/a2e9357389334dc89eecc1fb13999ee3.html
@@ -13,8 +13,7 @@ from table import Table
 # module SAP Functions, development started in 2024/03/01
 class SAP:
 
-    # Initializes the SAP object with a specified window index.
-    def __init__(self, window: int = 0):
+    def __init__(self, window: int = 0) -> None:
         self.side_index = None
         self.desired_operator = None
         self.desired_text = None
@@ -29,12 +28,11 @@ class SAP:
         if connection.Children(0).info.systemName == 'EQ0':
             print("You're with SAP Quality Assurance open, (SAP QA)\nMany things may not happen as desired!")
 
-        self.__count_and_create_sap_screens(window)
+        self.__count_and_create_sap_screens(connection, window)
         self.session = connection.Children(window)
         self.window = self.__active_window()
 
-    # Verify if SAP is open
-    def __get_sap_connection(self):
+    def __get_sap_connection(self) -> win32com.client.CDispatch:
         try:
             sapguiauto = win32com.client.GetObject('SAPGUI')
             application = sapguiauto.GetScriptingEngine
@@ -43,21 +41,18 @@ class SAP:
             raise Exception(
                 "SAP is not open!\nSAP must be open to run this script! Please, open it and try to run again.")
 
-    # Count the number of open SAP screens
-    def __count_and_create_sap_screens(self, window: int):
-        while len(self.connection.sessions) < window + 1:
-            self.connection.Children(0).createSession()
+    def __count_and_create_sap_screens(self, connection, window: int):
+        while len(connection.sessions) < window + 1:
+            connection.Children(0).createSession()
             time.sleep(3)
 
-    # Finds the active window index.
-    def __active_window(self):
+    def __active_window(self) -> int:
         regex = re.compile('[0-9]')
         matches = regex.findall(self.session.ActiveWindow.name)
         for match in matches:
-            return match
+            return int(match)
 
-    # Scrolls through tabs within a specified area.
-    def __scroll_through_tabs(self, area, extension, selected_tab):
+    def __scroll_through_tabs(self, area, extension, selected_tab) -> win32com.client.CDispatch:
         children = area.Children
         for child in children:
             if child.Type == "GuiTabStrip":
@@ -75,7 +70,7 @@ class SAP:
                 return area
         return area
 
-    def __scroll_through_shell(self, extension):
+    def __scroll_through_shell(self, extension)  -> Union[bool, win32com.client.CDispatch]:
         if self.session.findById(extension).Type == 'GuiShell':
             try:
                 var = self.session.findById(extension).RowCount
@@ -105,8 +100,7 @@ class SAP:
                 result = self.__scroll_through_shell(extension + '/' + children[i].name)
         return result
 
-    # Scrolls through a grid based on its extension.
-    def __scroll_through_grid(self, extension):
+    def __scroll_through_grid(self, extension) -> Union[bool, win32com.client.CDispatch]:
         if self.session.findById(extension).Type == 'GuiShell':
             try:
                 var = self.session.findById(extension).RowCount
@@ -136,8 +130,7 @@ class SAP:
                 result = self.__scroll_through_grid(extension + '/' + children[i].name)
         return result
 
-    # Scrolls through a table based on its extension.
-    def __scroll_through_table(self, extension):
+    def __scroll_through_table(self, extension) -> Union[bool, win32com.client.CDispatch]:
         if 'tbl' in extension:
             try:
                 return self.session.findById(extension)
@@ -166,8 +159,7 @@ class SAP:
                 result = self.__scroll_through_table(extension + '/' + children[i].name)
         return result
 
-    # Scrolls through fields within a specified extension and objective.
-    def __scroll_through_fields(self, extension, objective, selected_tab):
+    def __scroll_through_fields(self, extension, objective, selected_tab) -> bool:
         children = self.session.findById(extension).Children
         result = False
         for i in range(len(children)):
@@ -200,7 +192,7 @@ class SAP:
         return result
 
     # Contains generic conditional statements for different objectives.
-    def __generic_conditionals(self, index, children, objective):
+    def __generic_conditionals(self, index, children, objective) -> bool:
         if objective == 'write_text_field':
             if children(index).Text == self.field_name:
                 if self.target_index == 0:
@@ -325,8 +317,7 @@ class SAP:
                         return False
         return False
 
-    # Selects a transaction within the SAP session.
-    def select_transaction(self, transaction: str):
+    def select_transaction(self, transaction: str) -> None:
         try:
             transaction_upper = transaction.upper()
             self.session.startTransaction(transaction_upper)
@@ -338,8 +329,7 @@ class SAP:
         except:
             raise Exception("Select transaction failed.\n" + self.get_footer_message())
 
-    # Selects the main screen of the SAP session.
-    def select_main_screen(self, skip_error=False):
+    def select_main_screen(self, skip_error=False) -> None:
         try:
             if not self.session.info.transaction == "SESSION_MANAGER":
                 self.session.startTransaction('SESSION_MANAGER')
@@ -348,8 +338,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Select main screen failed.")
 
-    # Cleans all fields within the SAP session.
-    def clean_all_fields(self, selected_tab=0, skip_error=False):
+    def clean_all_fields(self, selected_tab=0, skip_error=False) -> None:
         try:
             self.window = self.__active_window()
             area = self.__scroll_through_tabs(self.session.findById(f"wnd[{self.window}]/usr"),
@@ -365,8 +354,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Clean all fields failed.")
 
-    # Run the active transaction in the SAP screen
-    def run_actual_transaction(self):
+    def run_actual_transaction(self) -> None:
         try:
             self.window = self.__active_window()
             screen_title = self.session.activeWindow.text
@@ -376,8 +364,7 @@ class SAP:
         except:
             raise Exception("Run actual transaction failed.")
 
-    # Inserts a variant into the SAP session.
-    def insert_variant(self, variant_name: str, skip_error=False):
+    def insert_variant(self, variant_name: str, skip_error=False) -> None:
         try:
             self.session.findById("wnd[0]/tbar[1]/btn[17]").press()
             if self.session.activeWindow.name == 'wnd[1]':
@@ -389,8 +376,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Insert variant failed.")
 
-    # Changes the active tab within the SAP session.
-    def change_active_tab(self, selected_tab: int, skip_error=False):
+    def change_active_tab(self, selected_tab: int, skip_error=False) -> None:
         try:
             self.window = self.__active_window()
 
@@ -404,9 +390,8 @@ class SAP:
         except:
             if not skip_error: raise Exception("Change active tab failed.")
 
-            # Writes text into a text field within the SAP session.
 
-    def write_text_field(self, field_name: str, desired_text: str, target_index=0, selected_tab=0, skip_error=False):
+    def write_text_field(self, field_name: str, desired_text: str, target_index=0, selected_tab=0, skip_error=False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -419,9 +404,8 @@ class SAP:
         except:
             if not skip_error: raise Exception("Write text field failed.")
 
-    # Writes text into a text field until a certain index within the SAP session.
     def write_text_field_until(self, field_name: str, desired_text: str, target_index=0, selected_tab=0,
-                               skip_error=False):
+                               skip_error=False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -434,8 +418,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Write text field until failed.")
 
-    # Choose an option inside a SAP combo box
-    def choose_text_combo(self, field_name: str, desired_text: str, target_index=0, selected_tab=0, skip_error=False):
+    def choose_text_combo(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0, skip_error: int = False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -448,8 +431,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Choose text combo failed.")
 
-    # Flags a field within the SAP session.
-    def flag_field(self, field_name: str, desired_operator: bool, target_index=0, selected_tab=0, skip_error=False):
+    def flag_field(self, field_name: str, desired_operator: bool, target_index=0, selected_tab=0, skip_error=False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -462,9 +444,8 @@ class SAP:
         except:
             if not skip_error: raise Exception("Flag field failed.")
 
-    # Flags a field within the SAP session.
     def flag_field_at_side(self, field_name: str, desired_operator: bool, side_index=0, target_index=0, selected_tab=0,
-                           skip_error=False):
+                           skip_error=False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -478,8 +459,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Flag field at side failed.")
 
-    # Selects an option within a field in the SAP session.
-    def option_field(self, field_name: str, target_index=0, selected_tab=0, skip_error=False):
+    def option_field(self, field_name: str, target_index=0, selected_tab=0, skip_error=False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -491,8 +471,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Option field failed.")
 
-    # Presses a button within the SAP session.
-    def press_button(self, field_name: str, target_index=0, selected_tab=0, skip_error=False):
+    def press_button(self, field_name: str, target_index=0, selected_tab=0, skip_error=False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -504,8 +483,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Press button failed.")
 
-    # Selects multiple entries within a field in the SAP session.
-    def multiple_selection_field(self, field_name: str, target_index=0, selected_tab=0, skip_error=False):
+    def multiple_selection_field(self, field_name: str, target_index=0, selected_tab=0, skip_error=False) -> None:
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -517,16 +495,14 @@ class SAP:
         except:
             if not skip_error: raise Exception("Multiple selection field failed.")
 
-    # Finds a text field within the SAP session.
-    def find_text_field(self, field_name: str, selected_tab=0):
+    def find_text_field(self, field_name: str, selected_tab=0) -> bool:
         self.window = self.__active_window()
         self.field_name = field_name
         if selected_tab > 0:
             self.change_active_tab(selected_tab)
         return self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'find_text_field', selected_tab)
 
-    # Get the text that is at the side of the field_name.
-    def get_text_at_side(self, field_name, side_index: int, target_index=0, selected_tab=0):
+    def get_text_at_side(self, field_name, side_index: int, target_index=0, selected_tab=0) -> str:
         self.window = self.__active_window()
         self.field_name = field_name
         self.target_index = target_index
@@ -536,8 +512,7 @@ class SAP:
         if self.__scroll_through_fields(f"wnd[{self.window}]", 'get_text_at_side', selected_tab):
             return self.found_text
 
-    # Pastes data into multiple selection fields in the SAP session.
-    def multiple_selection_paste_data(self, data: str, skip_error=False):
+    def multiple_selection_paste_data(self, data: str, skip_error=False) -> None:
         try:
             with open('C:/Temp/temp_paste.txt', 'w') as arquivo:
                 arquivo.write(data)
@@ -551,8 +526,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Multiple selection paste data failed.")
 
-    # Navigate around the menu in the SAP header
-    def navigate_into_menu_header(self, path: str):
+    def navigate_into_menu_header(self, path: str) -> None:
         id_path = 'wnd[0]/mbar'
         if ';' not in path:
             raise Exception("The menu path must be in the format 'path1;path2;path3'")
@@ -568,8 +542,7 @@ class SAP:
                     break
         self.session.findById(id_path).Select()
 
-    # Saves a file in the SAP session.
-    def save_file(self, file_name: str, path: str, option=0, type_of_file='txt', skip_error=False):
+    def save_file(self, file_name: str, path: str, option=0, type_of_file='txt', skip_error=False) -> None:
         try:
             if 'xls' in type_of_file:
                 self.session.findById("wnd[0]/mbar/menu[0]/menu[1]/menu[1]").Select()
@@ -586,8 +559,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Save file failed.")
 
-    # Views data in list form within the SAP session.
-    def view_in_list_form(self):
+    def view_in_list_form(self) -> None:
         warnings.warn("Deprecated in 0.1. "
                       "SAP.view_in_list_form will be removed in 1.0. "
                       "Use SAP.get_shell and its respective methods instead.", DeprecationWarning, stacklevel=2)
@@ -598,7 +570,7 @@ class SAP:
         except:
             raise Exception("View in list form failed.")
 
-    def get_table(self):
+    def get_table(self) -> None:
         try:
             self.window = self.__active_window()
             my_table = Table(self.__scroll_through_table(f'wnd[{self.window}]/usr'))
@@ -608,8 +580,7 @@ class SAP:
         except:
             raise Exception("Get table failed.")
 
-    # Retrieves the table object within the SAP session.
-    def get_my_table(self):
+    def get_my_table(self) -> None:
         warnings.warn("Deprecated in 0.1. "
                       "SAP.get_my_table will be removed in 1.0. "
                       "Use SAP.get_table instead.", DeprecationWarning, stacklevel=2)
@@ -622,8 +593,7 @@ class SAP:
         except:
             raise Exception("Get my table failed.")
 
-    # Retrieves a value from a cell
-    def my_table_get_cell_value(self, my_table, row_index: int, column_index: int):
+    def my_table_get_cell_value(self, my_table, row_index: int, column_index: int) -> str:
         warnings.warn("Deprecated in 0.1. "
                       "SAP.my_table_get_cell_value will be removed in 1.0. "
                       "Use SAP.get_table and its respective methods instead.", DeprecationWarning, stacklevel=2)
@@ -636,7 +606,6 @@ class SAP:
     # VisibleRowCount => Count the number of Visible Rows in the table
     # RowCount => Count the number of Rows inside the table
 
-    # Retrieves the shell object within the SAP session.
     def get_shell(self) -> Shell:
         try:
             self.window = self.__active_window()
@@ -647,8 +616,7 @@ class SAP:
         except:
             raise Exception("Get shell failed.")
 
-    # Retrieves the grid object within the SAP session.
-    def get_my_grid(self):
+    def get_my_grid(self) -> win32com.client.CDispatch:
         warnings.warn("Deprecated in 0.1. "
                       "SAP.get_my_grid will be removed in 1.0. "
                       "Use SAP.get_shell instead.", DeprecationWarning, stacklevel=2)
@@ -661,8 +629,7 @@ class SAP:
         except:
             raise Exception("Get my grid failed.")
 
-    # Select a Layout after accesses the table
-    def my_grid_select_layout(self, layout: str, skip_error=False):
+    def my_grid_select_layout(self, layout: str, skip_error=False) -> None:
         warnings.warn("Deprecated in 0.1. "
                       "SAP.my_grid_select_layout will be removed in 1.0. "
                       "Use SAP.get_shell and its respective methods instead.", DeprecationWarning, stacklevel=2)
@@ -680,8 +647,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("My grid select layout failed.")
 
-    # Count the total number of rows inside the Grid
-    def get_my_grid_count_rows(self, my_grid):
+    def get_my_grid_count_rows(self, my_grid) -> int:
         warnings.warn("Deprecated in 0.1. "
                       "SAP.get_my_grid_count_rows will be removed in 1.0. "
                       "Use SAP.get_shell and its respective methods instead.", DeprecationWarning, stacklevel=2)
@@ -704,8 +670,7 @@ class SAP:
         except:
             raise Exception("Get my grid count rows failed.")
 
-    # Retrieves the footer message within the SAP session.
-    def get_footer_message(self):
+    def get_footer_message(self) -> str:
         try:
             return self.session.findById("wnd[0]/sbar").Text
         except:
