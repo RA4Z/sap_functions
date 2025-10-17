@@ -571,10 +571,11 @@ class SAP:
     def get_table(self) -> None:
         try:
             self.window = self.__active_window()
-            my_table = Table(self.__scroll_through_table(f'wnd[{self.window}]/usr'))
-            if not my_table:
+            table_obj = self.__scroll_through_table(f'wnd[{self.window}]/usr')
+            if not table_obj:
                 raise Exception()
-            return my_table
+            table = Table(table_obj, self.session)
+            return table
         except:
             raise Exception("Get table failed.")
 

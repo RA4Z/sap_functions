@@ -50,8 +50,10 @@ class Shell:
             rows = self.count_rows()
             cols = self.shell_obj.ColumnCount
 
-            data = [[self.shell_obj.getCellValue(i, grid_column(c)) for c in range(cols)] for i in range(-1, rows)]
-            return data
+            header = [self.shell_obj.getCellValue(i, grid_column(c)) for c in range(cols) for i in range(-1, 0)]
+            data = [[self.shell_obj.getCellValue(i, grid_column(c)) for c in range(cols)] for i in range(0, rows)]
+            return {'header': header, 'content': data}
+
         except:
             raise Exception("Get all Shell Content Failed.")
 
