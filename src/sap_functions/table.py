@@ -32,13 +32,21 @@ class Table:
                 result = self.__scroll_through_table(extension + '/' + children[i].name)
         return result
 
-    def get_cell_value(self, row: int, column: str) -> str:
+    def get_cell_value(self, row: int, column: int, skip_error: bool = False) -> str:
         try:
             return self.table_obj.getCell(row, column).text
         except:
-            raise Exception("Get cell value failed.")
+            if not skip_error:
+                raise Exception("Get cell value failed.")
 
-    def get_table_content(self):
+    def write_cell_value(self, row: int, column: int, desired_text: str, skip_error: bool = False):
+        try:
+            self.table_obj.getCell(row, column).text = desired_text
+        except:
+            if not skip_error:
+                raise Exception("Get cell value failed.")
+
+    def get_table_content(self, skip_error: bool = False):
         try:
             obj_now = self.__scroll_through_table(f'wnd[0]/usr')
             added_rows = []
@@ -75,4 +83,5 @@ class Table:
             return {'header': header, 'content': content}
 
         except:
-            raise Exception("Get table content failed.")
+            if not skip_error:
+                raise Exception("Get table content failed.")

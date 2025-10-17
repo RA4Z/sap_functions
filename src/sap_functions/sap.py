@@ -568,7 +568,7 @@ class SAP:
         except:
             raise Exception("View in list form failed.")
 
-    def get_table(self) -> None:
+    def get_table(self) -> Table:
         try:
             self.window = self.__active_window()
             table_obj = self.__scroll_through_table(f'wnd[{self.window}]/usr')
@@ -579,7 +579,7 @@ class SAP:
         except:
             raise Exception("Get table failed.")
 
-    def get_my_table(self) -> None:
+    def get_my_table(self) -> win32com.client.CDispatch:
         warnings.warn("Deprecated in 0.1. "
                       "SAP.get_my_table will be removed in 1.0. "
                       "Use SAP.get_table instead.", DeprecationWarning, stacklevel=2)
