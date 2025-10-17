@@ -1,9 +1,11 @@
+import win32com
+
 class Shell:
-    def __init__(self, shell_obj, session):
+    def __init__(self, shell_obj: win32com.client.CDispatch, session: win32com.client.CDispatch):
         self.shell_obj = shell_obj
         self.session = session
 
-    def select_layout(self, layout) -> None:
+    def select_layout(self, layout: str) -> None:
         try:
             self.shell_obj.selectColumn("VARIANT")
             self.shell_obj.contextMenu()
@@ -36,7 +38,7 @@ class Shell:
         except:
             raise Exception("Count rows failed.")
 
-    def get_cell_value(self, index, column_id) -> str:
+    def get_cell_value(self, index: int, column_id: str) -> str:
         try:
             return self.shell_obj.getCellValue(index, column_id)
         except:
@@ -59,20 +61,20 @@ class Shell:
         except:
             raise Exception("Select All Content Failed.")
 
-    def select_column(self, column_id) -> None:
+    def select_column(self, column_id: int) -> None:
         try:
             self.shell_obj.selectColumn(column_id)
         except:
             raise Exception("Select Column Failed.")
 
-    def click_cell(self, index, column_id) -> None:
+    def click_cell(self, index: int, column_id: str) -> None:
         try:
             self.shell_obj.SetCurrentCell(index, column_id)
             self.shell_obj.doubleClickCurrentCell()
         except:
             raise Exception("Click Cell Failed.")
 
-    def press_button(self, field_name: str, skip_error=False) -> None:
+    def press_button(self, field_name: str, skip_error: bool = False) -> None:
         try:
             found = False
             for i in range(100):
@@ -86,7 +88,7 @@ class Shell:
         except:
             raise Exception("Press button failed")
         
-    def press_nested_button(self, *nested_fields, skip_error=False) -> None:
+    def press_nested_button(self, *nested_fields: str, skip_error: bool = False) -> None:
         try:
             found = False
             for i in range(100):
