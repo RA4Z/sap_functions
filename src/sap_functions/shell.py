@@ -1,5 +1,6 @@
 import win32com
 
+
 class Shell:
     def __init__(self, shell_obj: win32com.client.CDispatch, session: win32com.client.CDispatch):
         self.shell_obj = shell_obj
@@ -23,14 +24,14 @@ class Shell:
         try:
             rows = self.shell_obj.RowCount
             if rows > 0:
-                visiblerow = self.shell_obj.VisibleRowCount
-                visiblerow0 = self.shell_obj.VisibleRowCount
-                npagedown = rows // visiblerow0
-                if npagedown > 1:
-                    for j in range(1, npagedown + 1):
+                visible_row = self.shell_obj.VisibleRowCount
+                visible_row0 = self.shell_obj.VisibleRowCount
+                n_page_down = rows // visible_row0
+                if n_page_down > 1:
+                    for j in range(1, n_page_down + 1):
                         try:
-                            self.shell_obj.firstVisibleRow = visiblerow - 1
-                            visiblerow += visiblerow0
+                            self.shell_obj.firstVisibleRow = visible_row - 1
+                            visible_row += visible_row0
                         except:
                             break
                 self.shell_obj.firstVisibleRow = 0
@@ -44,7 +45,7 @@ class Shell:
         except:
             raise Exception("Get cell value failed.")
 
-    def get_shell_content(self) -> list:
+    def get_shell_content(self) -> dict:
         try:
             grid_column = self.shell_obj.ColumnOrder
             rows = self.count_rows()
@@ -89,17 +90,17 @@ class Shell:
                 raise Exception()
         except:
             raise Exception("Press button failed")
-        
+
     def press_nested_button(self, *nested_fields: str, skip_error: bool = False) -> None:
         try:
             found = False
             for i in range(100):
-                    button_id = self.shell_obj.GetToolbarButtonId(i)
-                    button_tooltip = self.shell_obj.GetToolbarButtonTooltip(i)
-                    if nested_fields[0] == button_tooltip:
-                        self.shell_obj.pressToolbarContextButton(button_id)
-                        self.shell_obj.SelectContextMenuItemByText(nested_fields[1])
-                        found = True
+                button_id = self.shell_obj.GetToolbarButtonId(i)
+                button_tooltip = self.shell_obj.GetToolbarButtonTooltip(i)
+                if nested_fields[0] == button_tooltip:
+                    self.shell_obj.pressToolbarContextButton(button_id)
+                    self.shell_obj.SelectContextMenuItemByText(nested_fields[1])
+                    found = True
             if not found and not skip_error:
                 raise Exception()
         except:
