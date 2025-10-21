@@ -77,7 +77,6 @@ class SAP:
         return area
 
     def __scroll_through_shell(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
-        print(extension)
         if self.session.findById(extension).Type == 'GuiShell':
             try:
                 var = self.session.findById(extension).RowCount
