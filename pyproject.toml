@@ -23,4 +23,5 @@ dependencies = ["pywin32==311"]
 
 [project.urls]
 Homepage = "https://github.com/RA4Z/sap_functions"
+Repository = "https://github.com/RA4Z/sap_functions"
 Issues = "https://github.com/RA4Z/sap_functions/issues"
