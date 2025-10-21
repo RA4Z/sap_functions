@@ -25,7 +25,7 @@ class Tree:
                 columns[colName] = col
                 header.append(colName)
 
-            for i in range(2, len(obj_key_values)):
+            for i in range(1, len(obj_key_values)):
                 active_row = []
                 for col in columns:
                     item = str(self.obj_gui_tree.getItemText(obj_key_values(i), columns[col]))
