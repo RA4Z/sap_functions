@@ -2,6 +2,7 @@ import win32com.client
 import re
 import os
 import time
+import uuid
 import warnings
 from tree import Tree
 from shell import Shell
@@ -637,16 +638,17 @@ class SAP:
         :param data: An array with the data that you want to insert in the multiple selection
         :param skip_error: Skip this function if occur any error
         """
+        uid = str(uuid.uuid4())
         try:
-            with open('C:/Temp/temp_paste.txt', 'w') as arquivo:
-                arquivo.write('\n'.join(data))
+            with open(f'C:/Temp/{uid}.txt', 'w') as file:
+                file.write('\n'.join(data))
             self.session.findById("wnd[1]/tbar[0]/btn[23]").press()
             self.session.findById("wnd[2]/usr/ctxtDY_PATH").text = 'C:/Temp'
-            self.session.findById("wnd[2]/usr/ctxtDY_FILENAME").text = "temp_paste.txt"
+            self.session.findById("wnd[2]/usr/ctxtDY_FILENAME").text = f"{uid}.txt"
             self.session.findById("wnd[2]/tbar[0]/btn[0]").press()
             self.session.findById("wnd[1]/tbar[0]/btn[8]").press()
-            if os.path.exists('C:/Temp/temp_paste.txt'):
-                os.remove('C:/Temp/temp_paste.txt')
+            if os.path.exists(f'C:/Temp/{uid}.txt'):
+                os.remove(f'C:/Temp/{uid}.txt')
         except:
             if not skip_error: raise Exception("Multiple selection paste data failed.")
 
