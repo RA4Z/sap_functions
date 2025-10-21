@@ -77,6 +77,7 @@ class SAP:
         return area
 
     def __scroll_through_shell(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
+        print(extension)
         if self.session.findById(extension).Type == 'GuiShell':
             try:
                 var = self.session.findById(extension).RowCount
@@ -104,6 +105,36 @@ class SAP:
                 i].Type in ("GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar "
                             "GuiUserArea GuiTitlebar"):
                 result = self.__scroll_through_shell(extension + '/' + children[i].name)
+        return result
+
+    def __scroll_through_tree(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
+        if self.session.findById(extension).Type == 'GuiShell':
+            try:
+                var = self.session.findById(extension).GetAllNodeKeys()
+                return self.session.findById(extension)
+            except:
+                pass
+        children = self.session.findById(extension).Children
+        result = False
+        for i in range(len(children)):
+            if result:
+                break
+            if children[i].Type == 'GuiCustomControl':
+                result = self.__scroll_through_tree(extension + '/cntl' + children[i].name)
+            if children[i].Type == 'GuiSimpleContainer':
+                result = self.__scroll_through_tree(extension + '/sub' + children[i].name)
+            if children[i].Type == 'GuiScrollContainer':
+                result = self.__scroll_through_tree(extension + '/ssub' + children[i].name)
+            if children[i].Type == 'GuiTableControl':
+                result = self.__scroll_through_tree(extension + '/tbl' + children[i].name)
+            if children[i].Type == 'GuiTab':
+                result = self.__scroll_through_tree(extension + '/tabp' + children[i].name)
+            if children[i].Type == 'GuiTabStrip':
+                result = self.__scroll_through_tree(extension + '/tabs' + children[i].name)
+            if children[
+                i].Type in ("GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar "
+                            "GuiUserArea GuiTitlebar"):
+                result = self.__scroll_through_tree(extension + '/' + children[i].name)
         return result
 
     def __scroll_through_grid(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
@@ -763,10 +794,10 @@ class SAP:
         """
         try:
             self.window = self.__active_window()
-            tree_obj = self.session.findById("wnd[0]/shellcont/shell/shellcont[1]/shell/shellcont[1]/shell[1]")
+            tree_obj = self.__scroll_through_tree(f'wnd[{self.window}]')
 
             if not tree_obj:
-                raise Exception()
+                raise Exception("Tree Object not found")
 
             tree = Tree(tree_obj)
             return tree
