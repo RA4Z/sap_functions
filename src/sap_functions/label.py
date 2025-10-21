@@ -22,7 +22,7 @@ class Label:
                 active_row = []
                 for c in range(0, 35):
                     try:
-                        cell = self.session.findById(f"wnd[{self.wnd}]/usr/lbl[{c},{i}]").text
+                        cell = self.session.findById(f"wnd[{self.wnd}]/usr/lbl[{c},{i}]").text.strip()
                         active_row.append(cell)
                     except:
                         pass
@@ -54,13 +54,18 @@ class Label:
         columns = []
         added_rows = []
 
-        for c in range(1, 1000):
-            try:
-                cell = self.session.findById(f"wnd[{self.wnd}]/usr/lbl[{c},{1}]").text
-                header.append(cell)
-                columns.append(c)
-            except:
-                pass
+        for header_row_index in range(0, 4):
+            for c in range(1, 1000):
+                try:
+                    cell = self.session.findById(f"wnd[{self.wnd}]/usr/lbl[{c},{header_row_index}]").text.strip()
+                    header.append(cell)
+                    columns.append(c)
+                except:
+                    pass
+
+            if len(columns) > 0:
+                break
+
         while True:
             if finished_collecting:
                 break
@@ -68,7 +73,7 @@ class Label:
                 active_row = []
                 for c in columns:
                     try:
-                        cell = self.session.findById(f"wnd[{self.wnd}]/usr/lbl[{c},{i}]").text
+                        cell = self.session.findById(f"wnd[{self.wnd}]/usr/lbl[{c},{i}]").text.strip()
                         active_row.append(cell)
                     except:
                         pass
