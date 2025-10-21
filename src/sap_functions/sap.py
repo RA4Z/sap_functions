@@ -5,6 +5,7 @@ import time
 import warnings
 from shell import Shell
 from table import Table
+from label import Label
 from typing import Union
 
 
@@ -702,6 +703,18 @@ class SAP:
             my_grid.SelectContextMenuItem("&PRINT_BACK_PREVIEW")
         except:
             raise Exception("View in list form failed.")
+
+    def get_label(self) -> Label:
+        """
+        Get the SAP Label object from the current SAP Label Window
+        :return: A SAP Label object, that can be used to extract data from Label components in SAP
+        """
+        try:
+            self.window = self.__active_window()
+            label = Label(self.session, self.window)
+            return label
+        except:
+            raise Exception("Get label failed.")
 
     def get_table(self) -> Table:
         """
