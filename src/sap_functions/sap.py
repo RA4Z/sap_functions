@@ -369,9 +369,10 @@ class SAP:
         except:
             if not skip_error: raise Exception("Clean all fields failed.")
 
-    def run_actual_transaction(self) -> None:
+    def run_actual_transaction(self, skip_error=False) -> None:
         """
         Run the active transaction, this function will try to press Enter, and after that will try to press F8
+        :param skip_error: Skip this function if occur any error
         """
         try:
             self.window = self.__active_window()
@@ -380,7 +381,8 @@ class SAP:
             if screen_title == self.session.activeWindow.text:
                 self.session.findById(f'wnd[{self.window}]').sendVKey(8)
         except:
-            raise Exception("Run actual transaction failed.")
+            if not skip_error:
+                raise Exception("Run actual transaction failed.")
 
     def insert_variant(self, variant_name: str, skip_error: bool = False) -> None:
         """
