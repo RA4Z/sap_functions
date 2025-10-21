@@ -3,6 +3,7 @@ import re
 import os
 import time
 import warnings
+from tree import Tree
 from shell import Shell
 from table import Table
 from label import Label
@@ -753,9 +754,22 @@ class SAP:
         except:
             raise Exception("My table get cell value failed.")
 
-    # my_table tips:
-    # VisibleRowCount => Count the number of Visible Rows in the table
-    # RowCount => Count the number of Rows inside the table
+    def get_tree(self) -> Tree:
+        """
+        Get the SAP Tree object from the current SAP Tree Window
+        :return: A SAP Tree object, that can be used to extract data from Tree tables in SAP
+        """
+        try:
+            self.window = self.__active_window()
+            tree_obj = self.session.findById("wnd[0]/shellcont/shell/shellcont[1]/shell/shellcont[1]/shell[1]")
+
+            if not tree_obj:
+                raise Exception()
+
+            tree = Tree(tree_obj)
+            return tree
+        except:
+            raise Exception("Get Tree failed.")
 
     def get_shell(self) -> Shell:
         """
