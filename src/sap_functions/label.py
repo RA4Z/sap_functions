@@ -8,13 +8,17 @@ class Label:
 
     def get_label_content(self) -> dict:
         """
-        Store all the visible content from a SAP Label, the data will be stored and returned in a dictionary with
+        Store all the content from a SAP Label, the data will be stored and returned in a dictionary with
         'header' and 'content' items
         :return: A dictionary with 'header' and 'content' items
         """
+
+        finished_collecting = False
         header = []
         content = []
         columns = []
+        added_rows = []
+
         for c in range(1, 1000):
             try:
                 cell = self.session.findById(f"wnd[{self.wnd}]/usr/lbl[{c},{1}]").text
@@ -22,17 +26,29 @@ class Label:
                 columns.append(c)
             except:
                 pass
+        while True:
+            if finished_collecting:
+                break
+            for i in range(2, 100):
+                active_row = []
+                for c in columns:
+                    try:
+                        cell = self.session.findById(f"wnd[{self.wnd}]/usr/lbl[{c},{i}]").text
+                        active_row.append(cell)
+                    except:
+                        pass
 
-        for i in range(2, 100):
-            active_row = []
-            for c in columns:
-                try:
-                    cell = self.session.findById(f"wnd[{self.wnd}]/usr/lbl[{c},{i}]").text
-                    active_row.append(cell)
-                except:
-                    pass
+                if not all(value is None for value in active_row):
+                    row_with_id = list(active_row)
+                    row_with_id.append(i)
 
-            if not all(value is None for value in active_row):
-                content.append(active_row)
+                    if row_with_id in added_rows:
+                        finished_collecting = True
+                        break
+
+                    content.append(active_row)
+                    added_rows.append(row_with_id)
+
+            self.session.findById(f"wnd[{self.wnd}]").sendVKey(82)
 
         return {'header': header, 'content': content}
