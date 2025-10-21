@@ -86,7 +86,7 @@ class Shell:
         except:
             raise Exception("Select All Content Failed.")
 
-    def select_column(self, column_id: int) -> None:
+    def select_column(self, column_id: str) -> None:
         """
         Select a specific column
         :param column_id: Shell column "Field Name" found in the respective column Technical Information tab
