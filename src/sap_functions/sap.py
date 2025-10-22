@@ -83,6 +83,15 @@ class SAP:
                 return self.session.findById(extension)
             except:
                 pass
+
+            try:
+                for i in range(100):
+                    button_id = self.session.findById(extension).GetButtonId(i)
+                    if '&' in button_id:
+                        return self.session.findById(extension)
+            except:
+                pass
+
         children = self.session.findById(extension).Children
         result = False
         for i in range(len(children)):
@@ -810,7 +819,7 @@ class SAP:
         """
         try:
             self.window = self.__active_window()
-            shell_obj = self.__scroll_through_shell(f'wnd[{self.window}]/usr')
+            shell_obj = self.__scroll_through_shell(f'wnd[{self.window}]')
 
             if not shell_obj:
                 raise Exception()

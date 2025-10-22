@@ -5,6 +5,22 @@ class Shell:
     def __init__(self, shell_obj: win32com.client.CDispatch, session: win32com.client.CDispatch):
         self.shell_obj = shell_obj
         self.session = session
+        self.commands_spec = [
+            {
+                'get_id_method_name': 'GetToolbarButtonId',
+                'get_tooltip_method_name': 'GetToolbarButtonTooltip',
+                'press_method_name': 'pressToolbarContextButton',
+                'press_context_name': 'pressToolbarContextButton',
+                'select_context_item_name': 'SelectContextMenuItemByText'
+            },
+            {
+                'get_id_method_name': 'GetButtonId',
+                'get_tooltip_method_name': 'GetButtonTooltip',
+                'press_method_name': 'pressButton',
+                'press_context_name': 'pressContextButton',
+                'select_context_item_name': 'SelectContextMenuItemByText'
+            }
+        ]
 
     def select_layout(self, layout: str) -> None:
         """
@@ -114,17 +130,22 @@ class Shell:
         :param field_name: The button that you want to press, this text need to be inside the button or in the tooltip of the button
         :param skip_error: Skip this function if occur any error
         """
-        try:
-            found = False
-            for i in range(100):
-                button_id = self.shell_obj.GetToolbarButtonId(i)
-                button_tooltip = self.shell_obj.GetToolbarButtonTooltip(i)
-                if field_name == button_tooltip:
-                    self.shell_obj.pressToolbarContextButton(button_id)
-                    found = True
-            if not found and not skip_error:
-                raise Exception()
-        except:
+        for command_info in self.commands_spec:
+            try:
+                get_id_func = getattr(self.shell_obj, command_info['get_id_method_name'])
+                get_tooltip_func = getattr(self.shell_obj, command_info['get_tooltip_method_name'])
+                press_func = getattr(self.shell_obj, command_info['press_method_name'])
+
+                for i in range(100):
+                    button_id = get_id_func(i)
+                    button_tooltip = get_tooltip_func(i)
+                    if field_name == button_tooltip:
+                        press_func(button_id)
+                        return
+            except:
+                pass
+
+        if not skip_error:
             raise Exception("Press button failed")
 
     def press_nested_button(self, *nested_fields: str, skip_error: bool = False) -> None:
@@ -134,16 +155,22 @@ class Shell:
         :param nested_fields: The nested path that you want to navigate to press the button
         :param skip_error: Skip this function if occur any error
         """
-        try:
-            found = False
-            for i in range(100):
-                button_id = self.shell_obj.GetToolbarButtonId(i)
-                button_tooltip = self.shell_obj.GetToolbarButtonTooltip(i)
-                if nested_fields[0] == button_tooltip:
-                    self.shell_obj.pressToolbarContextButton(button_id)
-                    self.shell_obj.SelectContextMenuItemByText(nested_fields[1])
-                    found = True
-            if not found and not skip_error:
-                raise Exception()
-        except:
+        for command_info in self.commands_spec:
+            try:
+                get_id_func = getattr(self.shell_obj, command_info['get_id_method_name'])
+                get_tooltip_func = getattr(self.shell_obj, command_info['get_tooltip_method_name'])
+                press_func = getattr(self.shell_obj, command_info['press_context_name'])
+                select_func = getattr(self.shell_obj, command_info['select_context_item_name'])
+
+                for i in range(100):
+                    button_id = get_id_func(i)
+                    button_tooltip = get_tooltip_func(i)
+                    if nested_fields[0] == button_tooltip:
+                        press_func(button_id)
+                        select_func(nested_fields[1])
+                        return
+            except:
+                pass
+
+        if not skip_error:
             raise Exception("Press nested button failed")
