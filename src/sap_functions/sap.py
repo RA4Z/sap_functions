@@ -670,22 +670,28 @@ class SAP:
         if self.__scroll_through_fields(f"wnd[{self.window}]", 'get_text_at_side', selected_tab):
             return self.found_text
 
-    def multiple_selection_paste_data(self, data: list, skip_error: bool = False) -> None:
+    def multiple_selection_paste_data(self, data: list[str], delete_values: bool = False, skip_error: bool = False) -> None:
         """
         With the Multiple Selection window open, it's possible to execute this function to easily paste all the data
         from a list
         :param data: An array with the data that you want to insert in the multiple selection
+        :param delete_values: Boolean to determine if you want to insert the list to delete it from the final result
         :param skip_error: Skip this function if occur any error
         """
         uid = str(uuid.uuid4())
+        self.window = self.__active_window()
+
+        if delete_values:
+            self.change_active_tab(2)
+
         try:
             with open(f'C:/Temp/{uid}.txt', 'w') as file:
                 file.write('\n'.join(data))
-            self.session.findById("wnd[1]/tbar[0]/btn[23]").press()
-            self.session.findById("wnd[2]/usr/ctxtDY_PATH").text = 'C:/Temp'
-            self.session.findById("wnd[2]/usr/ctxtDY_FILENAME").text = f"{uid}.txt"
-            self.session.findById("wnd[2]/tbar[0]/btn[0]").press()
-            self.session.findById("wnd[1]/tbar[0]/btn[8]").press()
+            self.session.findById(f"wnd[{self.window}]/tbar[0]/btn[23]").press()
+            self.session.findById(f"wnd[{self.window + 1}]/usr/ctxtDY_PATH").text = 'C:/Temp'
+            self.session.findById(f"wnd[{self.window + 1}]/usr/ctxtDY_FILENAME").text = f"{uid}.txt"
+            self.session.findById(f"wnd[{self.window + 1}]/tbar[0]/btn[0]").press()
+            self.session.findById(f"wnd[{self.window}]/tbar[0]/btn[8]").press()
             if os.path.exists(f'C:/Temp/{uid}.txt'):
                 os.remove(f'C:/Temp/{uid}.txt')
         except:
