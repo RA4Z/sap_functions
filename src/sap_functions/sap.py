@@ -378,6 +378,17 @@ class SAP:
                         return False
                     return False
 
+        if objective == 'set_focus':
+            if children(index).Text == self.__field_name:
+                if self.__target_index == 0:
+                    try:
+                        children(index + self.__side_index).setFocus()
+                        return True
+                    except:
+                        return False
+                else:
+                    self.__target_index -= 1
+
         if objective == 'get_text_at_side':
             if children(index).Text == self.__field_name:
                 if self.__target_index == 0:
@@ -703,6 +714,28 @@ class SAP:
             self.change_active_tab(selected_tab)
         if self.__scroll_through_fields(f"wnd[{self.window}]", 'get_text_at_side'):
             return self.found_text
+
+    def set_focus(self, field_name, side_index: int = 0, target_index: int = 0, selected_tab: Union[int, str] = 0):
+        """
+        This function will select/focus in the field with the text received as a parameter
+        :param field_name: The text that you want to focus
+        :param side_index: Number of components at the side of the respective field_name, with positive numbers the code will go through components at right, if negative it will go through components at left
+        :param target_index: Target index, determines how many occurrences precede the desired field
+        :param selected_tab: Desired Tab, where this field can be found, the SAP default tab is 0
+        """
+        self.window = self.__active_window()
+        self.__field_name = field_name
+        self.__target_index = target_index
+        self.__side_index = side_index
+        if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
+            self.change_active_tab(selected_tab)
+        self.__scroll_through_fields(f"wnd[{self.window}]", 'set_focus')
+
+    def open_focused_field_modal(self):
+        """
+        This function will open the modal of a focused field
+        """
+        self.session.findById(f'wnd[{self.window}]').sendVKey(4)
 
     def multiple_selection_paste_data(self, data: list[str], delete_values: bool = False,
                                       skip_error: bool = False) -> None:
