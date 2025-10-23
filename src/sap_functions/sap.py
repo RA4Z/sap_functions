@@ -741,16 +741,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Save file failed.")
 
-    def view_in_list_form(self) -> None:
-        warnings.warn("Deprecated in 0.1. "
-                      "SAP.view_in_list_form will be removed in 1.0. "
-                      "Use SAP.get_shell and its respective methods instead.", DeprecationWarning, stacklevel=2)
-        try:
-            my_grid = self.get_my_grid()
-            my_grid.pressToolbarContextButton("&MB_VIEW")
-            my_grid.SelectContextMenuItem("&PRINT_BACK_PREVIEW")
-        except:
-            raise Exception("View in list form failed.")
+
 
     def get_label(self) -> Label:
         """
@@ -778,28 +769,6 @@ class SAP:
             return table
         except:
             raise Exception("Get table failed.")
-
-    def get_my_table(self) -> win32com.client.CDispatch:
-        warnings.warn("Deprecated in 0.1. "
-                      "SAP.get_my_table will be removed in 1.0. "
-                      "Use SAP.get_table instead.", DeprecationWarning, stacklevel=2)
-        try:
-            self.window = self.__active_window()
-            my_table = self.__scroll_through_table(f'wnd[{self.window}]/usr')
-            if not my_table:
-                raise Exception()
-            return my_table
-        except:
-            raise Exception("Get my table failed.")
-
-    def my_table_get_cell_value(self, my_table: win32com.client.CDispatch, row_index: int, column_index: int) -> str:
-        warnings.warn("Deprecated in 0.1. "
-                      "SAP.my_table_get_cell_value will be removed in 1.0. "
-                      "Use SAP.get_table and its respective methods instead.", DeprecationWarning, stacklevel=2)
-        try:
-            return my_table.getCell(row_index, column_index).Text
-        except:
-            raise Exception("My table get cell value failed.")
 
     def get_tree(self) -> Tree:
         """
@@ -834,60 +803,6 @@ class SAP:
             return shell
         except:
             raise Exception("Get shell failed.")
-
-    def get_my_grid(self) -> win32com.client.CDispatch:
-        warnings.warn("Deprecated in 0.1. "
-                      "SAP.get_my_grid will be removed in 1.0. "
-                      "Use SAP.get_shell instead.", DeprecationWarning, stacklevel=2)
-        try:
-            self.window = self.__active_window()
-            my_grid = self.__scroll_through_grid(f'wnd[{self.window}]/usr')
-            if not my_grid:
-                raise Exception()
-            return my_grid
-        except:
-            raise Exception("Get my grid failed.")
-
-    def my_grid_select_layout(self, layout: str, skip_error: bool = False) -> None:
-        warnings.warn("Deprecated in 0.1. "
-                      "SAP.my_grid_select_layout will be removed in 1.0. "
-                      "Use SAP.get_shell and its respective methods instead.", DeprecationWarning, stacklevel=2)
-        try:
-            my_grid = self.get_my_grid()
-            my_grid.selectColumn("VARIANT")
-            my_grid.contextMenu()
-            my_grid.selectContextMenuItem("&FILTER")
-            self.session.findById("wnd[2]/usr/ssub%_SUBSCREEN_FREESEL:SAPLSSEL:1105/ctxt%%DYN001-LOW").text = layout
-            self.session.findById("wnd[2]/tbar[0]/btn[0]").press()
-            self.session.findById(
-                "wnd[1]/usr/ssubD0500_SUBSCREEN:SAPLSLVC_DIALOG:0501/cntlG51_CONTAINER/shellcont/shell").selectedRows = "0"
-            self.session.findById(
-                "wnd[1]/usr/ssubD0500_SUBSCREEN:SAPLSLVC_DIALOG:0501/cntlG51_CONTAINER/shellcont/shell").clickCurrentCell()
-        except:
-            if not skip_error: raise Exception("My grid select layout failed.")
-
-    def get_my_grid_count_rows(self, my_grid: win32com.client.CDispatch) -> int:
-        warnings.warn("Deprecated in 0.1. "
-                      "SAP.get_my_grid_count_rows will be removed in 1.0. "
-                      "Use SAP.get_shell and its respective methods instead.", DeprecationWarning, stacklevel=2)
-        try:
-            self.window = self.__active_window()
-            rows = my_grid.RowCount
-            if rows > 0:
-                visiblerow = my_grid.VisibleRowCount
-                visiblerow0 = my_grid.VisibleRowCount
-                npagedown = rows // visiblerow0
-                if npagedown > 1:
-                    for j in range(1, npagedown + 1):
-                        try:
-                            my_grid.firstVisibleRow = visiblerow - 1
-                            visiblerow += visiblerow0
-                        except:
-                            break
-                my_grid.firstVisibleRow = 0
-            return rows
-        except:
-            raise Exception("Get my grid count rows failed.")
 
     def get_footer_message(self) -> str:
         """
