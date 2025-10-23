@@ -18,12 +18,13 @@ from typing import Union
 class SAP:
 
     def __init__(self, window: int = 0) -> None:
-        self.desired_operator = None
-        self.selected_tab_id = None
-        self.desired_text = None
-        self.target_index = None
-        self.side_index = None
-        self.field_name = None
+        self.__desired_operator = None
+        self.__selected_tab_id = None
+        self.__desired_text = None
+        self.__target_index = None
+        self.__side_index = None
+        self.__field_name = None
+        self.__selected_tab_name = ''
 
         connection = self.__get_sap_connection()
 
@@ -37,7 +38,6 @@ class SAP:
         self.__count_and_create_sap_screens(connection, window)
         self.session = connection.Children(window)
         self.window = self.__active_window()
-        self.selected_tab_name = ''
 
     def __get_sap_connection(self) -> win32com.client.CDispatch:
         try:
@@ -68,8 +68,8 @@ class SAP:
                 return self.__scroll_through_tabs_by_id(self.session.findById(extension), extension, selected_tab)
             if child.Type == "GuiTab":
                 extension = extension + "/tabp" + str(children[selected_tab].name)
-                self.selected_tab_id = selected_tab
-                self.selected_tab_name = children[selected_tab].text
+                self.__selected_tab_id = selected_tab
+                self.__selected_tab_name = children[selected_tab].text
                 return self.__scroll_through_tabs_by_id(self.session.findById(extension), extension, selected_tab)
             if child.Type == "GuiSimpleContainer":
                 extension = extension + "/sub" + child.name
@@ -91,8 +91,8 @@ class SAP:
                 temp_extension = extension + "/tabp" + str(child.name)
                 if str(self.session.findById(temp_extension).text).strip() == tab_name:
                     extension = extension + "/tabp" + str(child.name)
-                    self.selected_tab_id = i
-                    self.selected_tab_name = child.text
+                    self.__selected_tab_id = i
+                    self.__selected_tab_name = child.text
                     return self.__scroll_through_tabs_by_name(self.session.findById(extension), extension, tab_name)
             if child.Type == "GuiSimpleContainer":
                 extension = extension + "/sub" + child.name
@@ -232,7 +232,7 @@ class SAP:
         return result
 
     def __scroll_through_fields(self, extension: str, objective: str) -> bool:
-        selected_tab = self.selected_tab_id
+        selected_tab = self.__selected_tab_id
         children = self.session.findById(extension).Children
         result = False
         for i in range(len(children)):
@@ -265,37 +265,37 @@ class SAP:
 
     def __generic_conditionals(self, index: int, children: win32com.client.CDispatch, objective: str) -> bool:
         if objective == 'write_text_field':
-            if children(index).Text == self.field_name:
-                if self.target_index == 0:
+            if children(index).Text == self.__field_name:
+                if self.__target_index == 0:
                     try:
-                        children(index + 1).Text = self.desired_text
+                        children(index + 1).Text = self.__desired_text
                         return True
                     except:
                         return False
                 else:
-                    self.target_index -= 1
+                    self.__target_index -= 1
 
         if objective == 'write_text_field_until':
-            if children(index).Text == self.field_name:
-                if self.target_index == 0:
+            if children(index).Text == self.__field_name:
+                if self.__target_index == 0:
                     try:
-                        children(index + 3).Text = self.desired_text
+                        children(index + 3).Text = self.__desired_text
                         return True
                     except:
                         return False
                 else:
-                    self.target_index -= 1
+                    self.__target_index -= 1
 
         if objective == 'find_text_field':
             child = children(index)
-            if (self.field_name in child.Text or
-                    ('HTMLControl' in child.Text and self.field_name in child.BrowserHandle.document.all(0).innerText)):
+            if (self.__field_name in child.Text or
+                    ('HTMLControl' in child.Text and self.__field_name in child.BrowserHandle.document.all(0).innerText)):
                 return True
             return False
 
         if objective == 'multiple_selection_field':
-            if children(index).Text == self.field_name:
-                if self.target_index == 0:
+            if children(index).Text == self.__field_name:
+                if self.__target_index == 0:
                     try:
                         field = children(index).name
                         initial_position = field.find("%") + 1
@@ -310,44 +310,44 @@ class SAP:
                         return False
                     return False
                 else:
-                    self.target_index -= 1
+                    self.__target_index -= 1
 
         if objective == 'flag_field':
-            if children(index).Text == self.field_name:
-                if self.target_index == 0:
+            if children(index).Text == self.__field_name:
+                if self.__target_index == 0:
                     try:
-                        children(index).Selected = self.desired_operator
+                        children(index).Selected = self.__desired_operator
                         return True
                     except:
                         return False
                 else:
-                    self.target_index -= 1
+                    self.__target_index -= 1
 
         if objective == 'flag_field_at_side':
-            if children(index).Text == self.field_name:
-                if self.target_index == 0:
+            if children(index).Text == self.__field_name:
+                if self.__target_index == 0:
                     try:
-                        children(index + self.side_index).Selected = self.desired_operator
+                        children(index + self.__side_index).Selected = self.__desired_operator
                         return True
                     except:
                         return False
                 else:
-                    self.target_index -= 1
+                    self.__target_index -= 1
 
         if objective == 'option_field':
-            if children(index).Text == self.field_name:
-                if self.target_index == 0:
+            if children(index).Text == self.__field_name:
+                if self.__target_index == 0:
                     try:
                         children(index).Select()
                         return True
                     except:
                         return False
                 else:
-                    self.target_index -= 1
+                    self.__target_index -= 1
 
         if objective == 'press_button':
             try:
-                if self.field_name in children(index).Text or self.field_name in children(index).Tooltip:
+                if self.__field_name in children(index).Text or self.__field_name in children(index).Tooltip:
                     children(index).press()
                     return True
                 if self.session.info.transaction == 'CJ20N' or self.session.info.transaction == 'MD04':
@@ -356,7 +356,7 @@ class SAP:
                             if children(index).GetButtonTooltip(i) != '':
                                 id_button = children(index).GetButtonId(i)
                                 tooltip_button = children(index).GetButtonTooltip(i)
-                                if self.field_name in tooltip_button:
+                                if self.__field_name in tooltip_button:
                                     children(index).pressButton(id_button)
                     except:
                         return False
@@ -365,13 +365,13 @@ class SAP:
             return False
 
         if objective == 'choose_text_combo':
-            if children(index).Text == self.field_name:
-                if self.target_index == 0:
+            if children(index).Text == self.__field_name:
+                if self.__target_index == 0:
                     try:
                         entries = children(index + 1).Entries
                         for cont in range(len(entries)):
                             entry = entries.Item(cont)
-                            if self.desired_text == str(entry.Value):
+                            if self.__desired_text == str(entry.Value):
                                 children(index + 1).key = entry.key
                                 return True
                     except:
@@ -379,10 +379,10 @@ class SAP:
                     return False
 
         if objective == 'get_text_at_side':
-            if children(index).Text == self.field_name:
-                if self.target_index == 0:
+            if children(index).Text == self.__field_name:
+                if self.__target_index == 0:
                     try:
-                        self.found_text = children(index + self.side_index).Text
+                        self.found_text = children(index + self.__side_index).Text
                         return True
                     except:
                         return False
@@ -510,10 +510,10 @@ class SAP:
         """
         try:
             self.window = self.__active_window()
-            self.field_name = field_name
-            self.desired_text = desired_text
-            self.target_index = target_index
-            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
+            self.__field_name = field_name
+            self.__desired_text = desired_text
+            self.__target_index = target_index
+            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'write_text_field'):
                 raise Exception()
@@ -533,10 +533,10 @@ class SAP:
         """
         try:
             self.window = self.__active_window()
-            self.field_name = field_name
-            self.desired_text = desired_text
-            self.target_index = target_index
-            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
+            self.__field_name = field_name
+            self.__desired_text = desired_text
+            self.__target_index = target_index
+            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'write_text_field_until'):
                 raise Exception()
@@ -555,10 +555,10 @@ class SAP:
         """
         try:
             self.window = self.__active_window()
-            self.field_name = field_name
-            self.desired_text = desired_text
-            self.target_index = target_index
-            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
+            self.__field_name = field_name
+            self.__desired_text = desired_text
+            self.__target_index = target_index
+            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'choose_text_combo'):
                 raise Exception()
@@ -578,10 +578,10 @@ class SAP:
         """
         try:
             self.window = self.__active_window()
-            self.field_name = field_name
-            self.desired_operator = desired_operator
-            self.target_index = target_index
-            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
+            self.__field_name = field_name
+            self.__desired_operator = desired_operator
+            self.__target_index = target_index
+            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'flag_field'):
                 raise Exception()
@@ -602,11 +602,11 @@ class SAP:
         """
         try:
             self.window = self.__active_window()
-            self.field_name = field_name
-            self.desired_operator = desired_operator
-            self.target_index = target_index
-            self.side_index = side_index
-            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
+            self.__field_name = field_name
+            self.__desired_operator = desired_operator
+            self.__target_index = target_index
+            self.__side_index = side_index
+            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'flag_field_at_side'):
                 raise Exception()
@@ -624,9 +624,9 @@ class SAP:
         """
         try:
             self.window = self.__active_window()
-            self.field_name = field_name
-            self.target_index = target_index
-            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
+            self.__field_name = field_name
+            self.__target_index = target_index
+            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'option_field'):
                 raise Exception()
@@ -644,9 +644,9 @@ class SAP:
         """
         try:
             self.window = self.__active_window()
-            self.field_name = field_name
-            self.target_index = target_index
-            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
+            self.__field_name = field_name
+            self.__target_index = target_index
+            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not self.__scroll_through_fields(f"wnd[{self.window}]", 'press_button'):
                 raise Exception()
@@ -664,9 +664,9 @@ class SAP:
         """
         try:
             self.window = self.__active_window()
-            self.field_name = field_name
-            self.target_index = target_index
-            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
+            self.__field_name = field_name
+            self.__target_index = target_index
+            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'multiple_selection_field'):
                 raise Exception()
@@ -681,8 +681,8 @@ class SAP:
         :return: A boolean, True if the text was found and False if it was not found
         """
         self.window = self.__active_window()
-        self.field_name = field_name
-        if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
+        self.__field_name = field_name
+        if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
             self.change_active_tab(selected_tab)
         return self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'find_text_field')
 
@@ -696,10 +696,10 @@ class SAP:
         :return: A string with the text at the side of the searched text
         """
         self.window = self.__active_window()
-        self.field_name = field_name
-        self.target_index = target_index
-        self.side_index = side_index
-        if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
+        self.__field_name = field_name
+        self.__target_index = target_index
+        self.__side_index = side_index
+        if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
             self.change_active_tab(selected_tab)
         if self.__scroll_through_fields(f"wnd[{self.window}]", 'get_text_at_side'):
             return self.found_text
