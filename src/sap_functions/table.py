@@ -1,6 +1,7 @@
 import re
 
 
+# https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/ce1d9e64355d49568e5def5271aea2db.html?locale=en-US
 class Table:
     def __init__(self, table, session):
         self.table_obj = table
