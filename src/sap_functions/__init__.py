@@ -1,5 +1,5 @@
 from .sap import SAP
-from .shell import Shell
+from .grid import Grid
 from .table import Table
 
-__all__ = ["SAP", "Shell", "Table"]
+__all__ = ["SAP", "Grid", "Table"]

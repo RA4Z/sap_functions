@@ -23,9 +23,9 @@ def test_run_transaction():
    sap.run_actual_transaction()
 
 def test_get_label():
-   shell = sap.get_shell()
-   shell.press_button("Funções ALV standard on")
-   shell.press_nested_button("Visões", "Saída list.")
+   grid = sap.get_grid()
+   grid.press_button("Funções ALV standard on")
+   grid.press_nested_button("Visões", "Saída list.")
    label = sap.get_label()
 
    label.get_all_screen_labels()

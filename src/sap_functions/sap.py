@@ -5,7 +5,7 @@ import time
 import uuid
 from .tree import Tree
 from .node import Node
-from .shell import Shell
+from .grid import Grid
 from .table import Table
 from .label import Label
 from typing import Union
@@ -103,7 +103,7 @@ class SAP:
                 return area
         return area
 
-    def __scroll_through_shell(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
+    def __scroll_through_grid(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
         if self.session.findById(extension).Type == 'GuiShell':
             try:
                 var = self.session.findById(extension).RowCount
@@ -125,21 +125,21 @@ class SAP:
             if result:
                 break
             if children[i].Type == 'GuiCustomControl':
-                result = self.__scroll_through_shell(extension + '/cntl' + children[i].name)
+                result = self.__scroll_through_grid(extension + '/cntl' + children[i].name)
             if children[i].Type == 'GuiSimpleContainer':
-                result = self.__scroll_through_shell(extension + '/sub' + children[i].name)
+                result = self.__scroll_through_grid(extension + '/sub' + children[i].name)
             if children[i].Type == 'GuiScrollContainer':
-                result = self.__scroll_through_shell(extension + '/ssub' + children[i].name)
+                result = self.__scroll_through_grid(extension + '/ssub' + children[i].name)
             if children[i].Type == 'GuiTableControl':
-                result = self.__scroll_through_shell(extension + '/tbl' + children[i].name)
+                result = self.__scroll_through_grid(extension + '/tbl' + children[i].name)
             if children[i].Type == 'GuiTab':
-                result = self.__scroll_through_shell(extension + '/tabp' + children[i].name)
+                result = self.__scroll_through_grid(extension + '/tabp' + children[i].name)
             if children[i].Type == 'GuiTabStrip':
-                result = self.__scroll_through_shell(extension + '/tabs' + children[i].name)
+                result = self.__scroll_through_grid(extension + '/tabs' + children[i].name)
             if children[
                 i].Type in ("GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar "
                             "GuiUserArea GuiTitlebar"):
-                result = self.__scroll_through_shell(extension + '/' + children[i].name)
+                result = self.__scroll_through_grid(extension + '/' + children[i].name)
         return result
 
     def __scroll_through_tree(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
@@ -853,22 +853,22 @@ class SAP:
         except:
             raise Exception("Get Tree failed.")
 
-    def get_shell(self) -> Shell:
+    def get_grid(self) -> Grid:
         """
-        Get the SAP Shell object from the current SAP Shell Window
-        :return: A SAP Shell object, that can be used to extract data from Shell tables in SAP
+        Get the SAP Grid object from the current SAP Grid Window
+        :return: A SAP Grid object, that can be used to extract data from Grid tables in SAP
         """
         try:
             self.window = self.__active_window()
-            shell_obj = self.__scroll_through_shell(f'wnd[{self.window}]')
+            grid_obj = self.__scroll_through_grid(f'wnd[{self.window}]')
 
-            if not shell_obj:
+            if not grid_obj:
                 raise Exception()
 
-            shell = Shell(shell_obj, self.session)
-            return shell
+            grid = Grid(grid_obj, self.session)
+            return grid
         except:
-            raise Exception("Get shell failed.")
+            raise Exception("Get grid failed.")
 
     def get_node(self) -> Node:
         """

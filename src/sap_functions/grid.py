@@ -3,9 +3,10 @@ from typing import Union
 import re
 
 
-class Shell:
-    def __init__(self, shell_obj: win32com.client.CDispatch, session: win32com.client.CDispatch):
-        self.shell_obj = shell_obj
+# https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/4af24c3281fb4d6a809e53238562d3b2.html?locale=en-US
+class Grid:
+    def __init__(self, grid_obj: win32com.client.CDispatch, session: win32com.client.CDispatch):
+        self.grid_obj = grid_obj
         self.session = session
         self.window = self.__active_window()
         self.commands_spec = [
@@ -31,7 +32,7 @@ class Shell:
         for match in matches:
             return int(match)
         
-    def __scroll_through_shell(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
+    def __scroll_through_grid(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
         if self.session.findById(extension).Type == 'GuiShell':
             try:
                 var = self.session.findById(extension).RowCount
@@ -44,38 +45,38 @@ class Shell:
             if result:
                 break
             if children[i].Type == 'GuiCustomControl':
-                result = self.__scroll_through_shell(extension + '/cntl' + children[i].name)
+                result = self.__scroll_through_grid(extension + '/cntl' + children[i].name)
             if children[i].Type == 'GuiSimpleContainer':
-                result = self.__scroll_through_shell(extension + '/sub' + children[i].name)
+                result = self.__scroll_through_grid(extension + '/sub' + children[i].name)
             if children[i].Type == 'GuiScrollContainer':
-                result = self.__scroll_through_shell(extension + '/ssub' + children[i].name)
+                result = self.__scroll_through_grid(extension + '/ssub' + children[i].name)
             if children[i].Type == 'GuiTableControl':
-                result = self.__scroll_through_shell(extension + '/tbl' + children[i].name)
+                result = self.__scroll_through_grid(extension + '/tbl' + children[i].name)
             if children[i].Type == 'GuiTab':
-                result = self.__scroll_through_shell(extension + '/tabp' + children[i].name)
+                result = self.__scroll_through_grid(extension + '/tabp' + children[i].name)
             if children[i].Type == 'GuiTabStrip':
-                result = self.__scroll_through_shell(extension + '/tabs' + children[i].name)
+                result = self.__scroll_through_grid(extension + '/tabs' + children[i].name)
             if children[
                 i].Type in ("GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar "
                             "GuiUserArea GuiTitlebar"):
-                result = self.__scroll_through_shell(extension + '/' + children[i].name)
+                result = self.__scroll_through_grid(extension + '/' + children[i].name)
         return result
     
     def select_layout(self, layout: str) -> None:
         """
-        This function will select the desired Shell Layout when a SAP select Layout Pop up is open
+        This function will select the desired Grid Layout when a SAP select Layout Pop up is open
         :param layout: The desired Layout name
         """
         try:
             window = self.__active_window()
-            shell_layout_obj = self.__scroll_through_shell(f'wnd[{window}]/usr')
+            grid_layout_obj = self.__scroll_through_grid(f'wnd[{window}]/usr')
 
-            if not shell_layout_obj:
+            if not grid_layout_obj:
                 raise Exception()
 
-            shell_layout_obj.selectColumn("VARIANT")
-            shell_layout_obj.contextMenu()
-            shell_layout_obj.selectContextMenuItem("&FILTER")
+            grid_layout_obj.selectColumn("VARIANT")
+            grid_layout_obj.contextMenu()
+            grid_layout_obj.selectContextMenuItem("&FILTER")
             self.session.findById("wnd[2]/usr/ssub%_SUBSCREEN_FREESEL:SAPLSSEL:1105/ctxt%%DYN001-LOW").text = layout
             self.session.findById("wnd[2]/tbar[0]/btn[0]").press()
             self.session.findById(
@@ -87,23 +88,23 @@ class Shell:
 
     def count_rows(self) -> int:
         """
-        This function will count all the rows in the current Shell
-        :return: A integer with the total number of rows in the current Shell
+        This function will count all the rows in the current Grid
+        :return: A integer with the total number of rows in the current Grid
         """
         try:
-            rows = self.shell_obj.RowCount
+            rows = self.grid_obj.RowCount
             if rows > 0:
-                visible_row = self.shell_obj.VisibleRowCount
-                visible_row0 = self.shell_obj.VisibleRowCount
+                visible_row = self.grid_obj.VisibleRowCount
+                visible_row0 = self.grid_obj.VisibleRowCount
                 n_page_down = rows // visible_row0
                 if n_page_down > 1:
                     for j in range(1, n_page_down + 1):
                         try:
-                            self.shell_obj.firstVisibleRow = visible_row - 1
+                            self.grid_obj.firstVisibleRow = visible_row - 1
                             visible_row += visible_row0
                         except:
                             break
-                self.shell_obj.firstVisibleRow = 0
+                self.grid_obj.firstVisibleRow = 0
             return rows
         except:
             raise Exception("Count rows failed.")
@@ -114,86 +115,86 @@ class Shell:
         :param column_name: The target column's name
         :return: A string with the respective column id
         """
-        grid_column = self.shell_obj.ColumnOrder
-        cols = self.shell_obj.ColumnCount
+        grid_column = self.grid_obj.ColumnOrder
+        cols = self.grid_obj.ColumnCount
 
         for c in range(cols):
-            item = self.shell_obj.getCellValue(-1, grid_column(c))
+            item = self.grid_obj.getCellValue(-1, grid_column(c))
             if column_name == item:
                 return grid_column(c)
 
     def get_cell_value(self, index: int, column_id: str) -> str:
         """
-        Get the value of a specific Shell cell
+        Get the value of a specific Grid cell
         :param index: Row number of the desired cell
-        :param column_id: Shell column "Field Name" found in the respective column Technical Information tab
+        :param column_id: Grid column "Field Name" found in the respective column Technical Information tab
         :return: The value of the cell
         """
         try:
-            return self.shell_obj.getCellValue(index, column_id)
+            return self.grid_obj.getCellValue(index, column_id)
         except:
             raise Exception("Get cell value failed.")
 
-    def get_shell_content(self) -> dict:
+    def get_grid_content(self) -> dict:
         """
-        Store all the content from a SAP Shell, the data will be stored and returned in a dictionary with 'header' and
+        Store all the content from a SAP Grid, the data will be stored and returned in a dictionary with 'header' and
         'content' items
         :return: A dictionary with 'header' and 'content' items
         """
         try:
-            grid_column = self.shell_obj.ColumnOrder
+            grid_column = self.grid_obj.ColumnOrder
             rows = self.count_rows()
-            cols = self.shell_obj.ColumnCount
+            cols = self.grid_obj.ColumnCount
 
-            header = [self.shell_obj.getCellValue(i, grid_column(c)) for c in range(cols) for i in range(-1, 0)]
-            data = [[self.shell_obj.getCellValue(i, grid_column(c)) for c in range(cols)] for i in range(0, rows)]
+            header = [self.grid_obj.getCellValue(i, grid_column(c)) for c in range(cols) for i in range(-1, 0)]
+            data = [[self.grid_obj.getCellValue(i, grid_column(c)) for c in range(cols)] for i in range(0, rows)]
             return {'header': header, 'content': data}
 
         except:
-            raise Exception("Get all Shell Content Failed.")
+            raise Exception("Get all Grid Content Failed.")
 
     def select_all_content(self) -> None:
         """
         Select all the table, using the SAP native function to select all items
         """
         try:
-            self.shell_obj.selectAll()
+            self.grid_obj.selectAll()
         except:
             raise Exception("Select All Content Failed.")
 
     def select_column(self, column_id: str) -> None:
         """
         Select a specific column
-        :param column_id: Shell column "Field Name" found in the respective column Technical Information tab
+        :param column_id: Grid column "Field Name" found in the respective column Technical Information tab
         """
         try:
-            self.shell_obj.selectColumn(column_id)
+            self.grid_obj.selectColumn(column_id)
         except:
             raise Exception("Select Column Failed.")
 
     def click_cell(self, index: int, column_id: str) -> None:
         """
-        This function will select and double-click in a SAP Shell cell
+        This function will select and double-click in a SAP Grid cell
         :param index: Row number of the desired cell
-        :param column_id: Shell column "Field Name" found in the respective column Technical Information tab
+        :param column_id: Grid column "Field Name" found in the respective column Technical Information tab
         """
         try:
-            self.shell_obj.SetCurrentCell(index, column_id)
-            self.shell_obj.doubleClickCurrentCell()
+            self.grid_obj.SetCurrentCell(index, column_id)
+            self.grid_obj.doubleClickCurrentCell()
         except:
             raise Exception("Click Cell Failed.")
 
     def press_button(self, field_name: str, skip_error: bool = False) -> None:
         """
-        This function will press any button in the SAP Shell component
+        This function will press any button in the SAP Grid component
         :param field_name: The button that you want to press, this text need to be inside the button or in the tooltip of the button
         :param skip_error: Skip this function if occur any error
         """
         for command_info in self.commands_spec:
             try:
-                get_id_func = getattr(self.shell_obj, command_info['get_id_method_name'])
-                get_tooltip_func = getattr(self.shell_obj, command_info['get_tooltip_method_name'])
-                press_func = getattr(self.shell_obj, command_info['press_method_name'])
+                get_id_func = getattr(self.grid_obj, command_info['get_id_method_name'])
+                get_tooltip_func = getattr(self.grid_obj, command_info['get_tooltip_method_name'])
+                press_func = getattr(self.grid_obj, command_info['press_method_name'])
 
                 for i in range(100):
                     button_id = get_id_func(i)
@@ -216,10 +217,10 @@ class Shell:
         """
         for command_info in self.commands_spec:
             try:
-                get_id_func = getattr(self.shell_obj, command_info['get_id_method_name'])
-                get_tooltip_func = getattr(self.shell_obj, command_info['get_tooltip_method_name'])
-                press_func = getattr(self.shell_obj, command_info['press_context_name'])
-                select_func = getattr(self.shell_obj, command_info['select_context_item_name'])
+                get_id_func = getattr(self.grid_obj, command_info['get_id_method_name'])
+                get_tooltip_func = getattr(self.grid_obj, command_info['get_tooltip_method_name'])
+                press_func = getattr(self.grid_obj, command_info['press_context_name'])
+                select_func = getattr(self.grid_obj, command_info['select_context_item_name'])
 
                 for i in range(100):
                     button_id = get_id_func(i)
