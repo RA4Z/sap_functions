@@ -2,8 +2,8 @@ import win32com
 
 
 class Tree:
-    def __init__(self, obj_gui_tree: win32com.client.CDispatch):
-        self.obj_gui_tree = obj_gui_tree
+    def __init__(self, tree_obj: win32com.client.CDispatch):
+        self.tree_obj = tree_obj
 
     def get_tree_content(self, skip_error: bool = False) -> dict:
         """
@@ -16,19 +16,19 @@ class Tree:
             header = []
             content = []
 
-            obj_key_values = self.obj_gui_tree.GetAllNodeKeys()
-            all_column_names = self.obj_gui_tree.GetColumnNames()
+            obj_key_values = self.tree_obj.GetAllNodeKeys()
+            all_column_names = self.tree_obj.GetColumnNames()
             columns = {}
 
             for col in all_column_names:
-                colName = self.obj_gui_tree.GetColumnTitleFromName(col)
+                colName = self.tree_obj.GetColumnTitleFromName(col)
                 columns[colName] = col
                 header.append(colName)
 
             for i in range(1, len(obj_key_values)):
                 active_row = []
                 for col in columns:
-                    item = str(self.obj_gui_tree.getItemText(obj_key_values(i), columns[col]))
+                    item = str(self.tree_obj.getItemText(obj_key_values(i), columns[col]))
                     active_row.append(item)
 
                 content.append(active_row)

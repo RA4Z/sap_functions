@@ -16,7 +16,7 @@ def test_transaction():
       sap.select_transaction(os.getenv("not_existant_transaction"))
    sap.select_transaction(os.getenv("transaction_1"))
 
-def test_insert_data_transation():
+def test_insert_data_transaction():
    sap.write_text_field(os.getenv("transaction_1_field_1_name"), os.getenv("transaction_1_field_1_value"))
 
 def test_run_transaction():
