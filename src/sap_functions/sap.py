@@ -2,10 +2,14 @@ import win32com.client
 import re
 import os
 import time
+import uuid
 import warnings
 from .shell import Shell
 from .table import Table
+from .tree import Tree
+from .label import Label
 from typing import Union
+
 
 # SAP Scripting Documentation:
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/a2e9357389334dc89eecc1fb13999ee3.html
@@ -23,7 +27,8 @@ class SAP:
         connection = self.__get_sap_connection()
 
         if connection.Children(0).info.user == '':
-            raise Exception("SAP user is logged out!\nYou need to log in to SAP to run this script! Please log in and try again.")
+            raise Exception(
+                "SAP user is logged out!\nYou need to log in to SAP to run this script! Please log in and try again.")
 
         if connection.Children(0).info.systemName == 'EQ0':
             print("You're with SAP Quality Assurance open, (SAP QA)\nMany things may not happen as desired!")
@@ -41,7 +46,7 @@ class SAP:
             raise Exception(
                 "SAP is not open!\nSAP must be open to run this script! Please, open it and try to run again.")
 
-    def __count_and_create_sap_screens(self, connection:win32com.client.CDispatch, window: int):
+    def __count_and_create_sap_screens(self, connection: win32com.client.CDispatch, window: int):
         while len(connection.sessions) < window + 1:
             connection.Children(0).createSession()
             time.sleep(3)
@@ -52,7 +57,8 @@ class SAP:
         for match in matches:
             return int(match)
 
-    def __scroll_through_tabs(self, area: win32com.client.CDispatch, extension: str, selected_tab: int) -> win32com.client.CDispatch:
+    def __scroll_through_tabs(self, area: win32com.client.CDispatch, extension: str,
+                              selected_tab: int) -> win32com.client.CDispatch:
         children = area.Children
         for child in children:
             if child.Type == "GuiTabStrip":
@@ -77,6 +83,15 @@ class SAP:
                 return self.session.findById(extension)
             except:
                 pass
+
+            try:
+                for i in range(100):
+                    button_id = self.session.findById(extension).GetButtonId(i)
+                    if '&' in button_id:
+                        return self.session.findById(extension)
+            except:
+                pass
+
         children = self.session.findById(extension).Children
         result = False
         for i in range(len(children)):
@@ -98,6 +113,36 @@ class SAP:
                 i].Type in ("GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar "
                             "GuiUserArea GuiTitlebar"):
                 result = self.__scroll_through_shell(extension + '/' + children[i].name)
+        return result
+
+    def __scroll_through_tree(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
+        if self.session.findById(extension).Type == 'GuiShell':
+            try:
+                var = self.session.findById(extension).GetAllNodeKeys()
+                return self.session.findById(extension)
+            except:
+                pass
+        children = self.session.findById(extension).Children
+        result = False
+        for i in range(len(children)):
+            if result:
+                break
+            if children[i].Type == 'GuiCustomControl':
+                result = self.__scroll_through_tree(extension + '/cntl' + children[i].name)
+            if children[i].Type == 'GuiSimpleContainer':
+                result = self.__scroll_through_tree(extension + '/sub' + children[i].name)
+            if children[i].Type == 'GuiScrollContainer':
+                result = self.__scroll_through_tree(extension + '/ssub' + children[i].name)
+            if children[i].Type == 'GuiTableControl':
+                result = self.__scroll_through_tree(extension + '/tbl' + children[i].name)
+            if children[i].Type == 'GuiTab':
+                result = self.__scroll_through_tree(extension + '/tabp' + children[i].name)
+            if children[i].Type == 'GuiTabStrip':
+                result = self.__scroll_through_tree(extension + '/tabs' + children[i].name)
+            if children[
+                i].Type in ("GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar "
+                            "GuiUserArea GuiTitlebar"):
+                result = self.__scroll_through_tree(extension + '/' + children[i].name)
         return result
 
     def __scroll_through_grid(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
@@ -186,12 +231,11 @@ class SAP:
                 result = self.__scroll_through_fields(extension + "/cntl" + children[i].name, objective, selected_tab)
 
             if not result and children[i].Type in (
-            "GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar GuiUserArea GuiTitlebar"):
+                    "GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar GuiUserArea GuiTitlebar"):
                 result = self.__scroll_through_fields(extension + "/" + children[i].name, objective, selected_tab)
 
         return result
 
-    # Contains generic conditional statements for different objectives.
     def __generic_conditionals(self, index: int, children: win32com.client.CDispatch, objective: str) -> bool:
         if objective == 'write_text_field':
             if children(index).Text == self.field_name:
@@ -318,6 +362,10 @@ class SAP:
         return False
 
     def select_transaction(self, transaction: str) -> None:
+        """
+        Navigate to a transaction in SAP GUI
+        :param transaction: The name of the desired transaction
+        """
         try:
             transaction_upper = transaction.upper()
             self.session.startTransaction(transaction_upper)
@@ -330,6 +378,10 @@ class SAP:
             raise Exception("Select transaction failed.\n" + self.get_footer_message())
 
     def select_main_screen(self, skip_error: bool = False) -> None:
+        """
+        Navigate to the SAP main Screen
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             if not self.session.info.transaction == "SESSION_MANAGER":
                 self.session.startTransaction('SESSION_MANAGER')
@@ -338,7 +390,12 @@ class SAP:
         except:
             if not skip_error: raise Exception("Select main screen failed.")
 
-    def clean_all_fields(self, selected_tab: int = 0, skip_error = False) -> None:
+    def clean_all_fields(self, selected_tab: int = 0, skip_error=False) -> None:
+        """
+        Clean all the input fields in the actual screen
+        :param selected_tab: Transaction desired tab
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             self.window = self.__active_window()
             area = self.__scroll_through_tabs(self.session.findById(f"wnd[{self.window}]/usr"),
@@ -354,7 +411,11 @@ class SAP:
         except:
             if not skip_error: raise Exception("Clean all fields failed.")
 
-    def run_actual_transaction(self) -> None:
+    def run_actual_transaction(self, skip_error=False) -> None:
+        """
+        Run the active transaction, this function will try to press Enter, and after that will try to press F8
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             self.window = self.__active_window()
             screen_title = self.session.activeWindow.text
@@ -362,9 +423,17 @@ class SAP:
             if screen_title == self.session.activeWindow.text:
                 self.session.findById(f'wnd[{self.window}]').sendVKey(8)
         except:
-            raise Exception("Run actual transaction failed.")
+            if not skip_error:
+                raise Exception("Run actual transaction failed.")
 
     def insert_variant(self, variant_name: str, skip_error: bool = False) -> None:
+        """
+        This function will try to press the "Get Variant" button in the transaction, after that it will overwrite the
+        "Created By" field with an empty string, and fill the "Variant" field with the variant_name param, THIS FUNCTION
+        DOESN'T WORK IN EVERY TRANSACTION
+        :param variant_name: The transaction variant name
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             self.session.findById("wnd[0]/tbar[1]/btn[17]").press()
             if self.session.activeWindow.name == 'wnd[1]':
@@ -377,6 +446,11 @@ class SAP:
             if not skip_error: raise Exception("Insert variant failed.")
 
     def change_active_tab(self, selected_tab: int, skip_error: bool = False) -> None:
+        """
+        This function will try to select the transaction tab using the number "selected_tab"
+        :param selected_tab: Tab desired number, the SAP default tab is 0
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             self.window = self.__active_window()
 
@@ -390,8 +464,16 @@ class SAP:
         except:
             if not skip_error: raise Exception("Change active tab failed.")
 
-
-    def write_text_field(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def write_text_field(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0,
+                         skip_error: bool = False) -> None:
+        """
+        This function will write the desired text in the respective input at the side of the field name
+        :param field_name: The text that precedes the desired text field box
+        :param desired_text: The text that will overwrite the actual text in the field box
+        :param target_index: Target index, determines how many occurrences precede the desired field
+        :param selected_tab: Desired Tab, where this field can be found, the SAP default tab is 0
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -404,7 +486,17 @@ class SAP:
         except:
             if not skip_error: raise Exception("Write text field failed.")
 
-    def write_text_field_until(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def write_text_field_until(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0,
+                               skip_error: bool = False) -> None:
+        """
+        This function will write the desired text in the "until" field in the respective input at the side of the
+        field name
+        :param field_name: The text that precedes the desired text field box
+        :param desired_text: The text that will overwrite the actual text in the field box
+        :param target_index: Target index, determines how many occurrences precede the desired field
+        :param selected_tab: Desired Tab, where this field can be found, the SAP default tab is 0
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -417,7 +509,16 @@ class SAP:
         except:
             if not skip_error: raise Exception("Write text field until failed.")
 
-    def choose_text_combo(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def choose_text_combo(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0,
+                          skip_error: bool = False) -> None:
+        """
+        This function has the ability to choose a specific text that is found within a combo box component
+        :param field_name: The text that precedes the desired combo box
+        :param desired_text: The text that will be selected in the combo box
+        :param target_index: Target index, determines how many occurrences precede the desired field
+        :param selected_tab: Desired Tab, where this field can be found, the SAP default tab is 0
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -430,7 +531,17 @@ class SAP:
         except:
             if not skip_error: raise Exception("Choose text combo failed.")
 
-    def flag_field(self, field_name: str, desired_operator: bool, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def flag_field(self, field_name: str, desired_operator: bool, target_index: int = 0, selected_tab: int = 0,
+                   skip_error: bool = False) -> None:
+        """
+        This function can flag and unflag checkboxes based on the field_name, it will flag/unflag the checkbox in the
+        respective field_name
+        :param field_name: The text with the checkbox you want to flag/unflag
+        :param desired_operator: Boolean to say if you want to flag or unflag the checkbox
+        :param target_index: Target index, determines how many occurrences precede the desired field
+        :param selected_tab: Desired Tab, where this field can be found, the SAP default tab is 0
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -443,7 +554,18 @@ class SAP:
         except:
             if not skip_error: raise Exception("Flag field failed.")
 
-    def flag_field_at_side(self, field_name: str, desired_operator: bool, side_index: int = 0, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def flag_field_at_side(self, field_name: str, desired_operator: bool, side_index: int = 0, target_index: int = 0,
+                           selected_tab: int = 0, skip_error: bool = False) -> None:
+        """
+        This function can flag and unflag checkboxes based on the field_name, it will flag/unflag the checkbox at the
+        side of the respective field_name
+        :param field_name: The text at the side of the checkbox you want to flag/unflag
+        :param desired_operator: Boolean to say if you want to flag or unflag the checkbox
+        :param side_index: Number of components at the side of the respective field_name, with positive numbers the code will go through components at right, if negative it will go through components at left
+        :param target_index: Target index, determines how many occurrences precede the desired field
+        :param selected_tab: Desired Tab, where this field can be found, the SAP default tab is 0
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -457,7 +579,15 @@ class SAP:
         except:
             if not skip_error: raise Exception("Flag field at side failed.")
 
-    def option_field(self, field_name: str, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def option_field(self, field_name: str, target_index: int = 0, selected_tab: int = 0,
+                     skip_error: bool = False) -> None:
+        """
+        This function will select an option field
+        :param field_name: The text with the option field you want to select
+        :param target_index: Target index, determines how many occurrences precede the desired field
+        :param selected_tab: Desired Tab, where this field can be found, the SAP default tab is 0
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -469,7 +599,15 @@ class SAP:
         except:
             if not skip_error: raise Exception("Option field failed.")
 
-    def press_button(self, field_name: str, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def press_button(self, field_name: str, target_index: int = 0, selected_tab: int = 0,
+                     skip_error: bool = False) -> None:
+        """
+        Press any button in the SAP screens, except in shells and tables components
+        :param field_name: The button that you want to press, this text need to be inside the button or in the tooltip of the button
+        :param target_index: Target index, determines how many occurrences precede the desired field
+        :param selected_tab: Desired Tab, where this field can be found, the SAP default tab is 0
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -481,7 +619,15 @@ class SAP:
         except:
             if not skip_error: raise Exception("Press button failed.")
 
-    def multiple_selection_field(self, field_name: str, target_index: int = 0, selected_tab: int = 0, skip_error: bool = False) -> None:
+    def multiple_selection_field(self, field_name: str, target_index: int = 0, selected_tab: int = 0,
+                                 skip_error: bool = False) -> None:
+        """
+        This function will press the "Multiple Selection" button in the respective field
+        :param field_name: The text that precedes the desired text field box
+        :param target_index: Target index, determines how many occurrences precede the desired field
+        :param selected_tab: Desired Tab, where this field can be found, the SAP default tab is 0
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             self.window = self.__active_window()
             self.field_name = field_name
@@ -494,6 +640,12 @@ class SAP:
             if not skip_error: raise Exception("Multiple selection field failed.")
 
     def find_text_field(self, field_name: str, selected_tab=0) -> bool:
+        """
+        Verify if a text exists in the SAP screen
+        :param field_name: The text that you want to search
+        :param selected_tab: Desired Tab, where this field can be found, the SAP default tab is 0
+        :return: A boolean, True if the text was found and False if it was not found
+        """
         self.window = self.__active_window()
         self.field_name = field_name
         if selected_tab > 0:
@@ -501,6 +653,14 @@ class SAP:
         return self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'find_text_field', selected_tab)
 
     def get_text_at_side(self, field_name, side_index: int, target_index: int = 0, selected_tab: int = 0) -> str:
+        """
+        This function will return the text next to the text received as a parameter
+        :param field_name: The text that you want to search
+        :param side_index: Number of components at the side of the respective field_name, with positive numbers the code will go through components at right, if negative it will go through components at left
+        :param target_index: Target index, determines how many occurrences precede the desired field
+        :param selected_tab: Desired Tab, where this field can be found, the SAP default tab is 0
+        :return: A string with the text at the side of the searched text
+        """
         self.window = self.__active_window()
         self.field_name = field_name
         self.target_index = target_index
@@ -510,27 +670,41 @@ class SAP:
         if self.__scroll_through_fields(f"wnd[{self.window}]", 'get_text_at_side', selected_tab):
             return self.found_text
 
-    def multiple_selection_paste_data(self, data: str, skip_error: bool = False) -> None:
+    def multiple_selection_paste_data(self, data: list[str], delete_values: bool = False, skip_error: bool = False) -> None:
+        """
+        With the Multiple Selection window open, it's possible to execute this function to easily paste all the data
+        from a list
+        :param data: An array with the data that you want to insert in the multiple selection
+        :param delete_values: Boolean to determine if you want to insert the list to delete it from the final result
+        :param skip_error: Skip this function if occur any error
+        """
+        uid = str(uuid.uuid4())
+        self.window = self.__active_window()
+
+        if delete_values:
+            self.change_active_tab(2)
+
         try:
-            with open('C:/Temp/temp_paste.txt', 'w') as arquivo:
-                arquivo.write(data)
-            self.session.findById("wnd[1]/tbar[0]/btn[23]").press()
-            self.session.findById("wnd[2]/usr/ctxtDY_PATH").text = 'C:/Temp'
-            self.session.findById("wnd[2]/usr/ctxtDY_FILENAME").text = "temp_paste.txt"
-            self.session.findById("wnd[2]/tbar[0]/btn[0]").press()
-            self.session.findById("wnd[1]/tbar[0]/btn[8]").press()
-            if os.path.exists('C:/Temp/temp_paste.txt'):
-                os.remove('C:/Temp/temp_paste.txt')
+            with open(f'C:/Temp/{uid}.txt', 'w') as file:
+                file.write('\n'.join(data))
+            self.session.findById(f"wnd[{self.window}]/tbar[0]/btn[23]").press()
+            self.session.findById(f"wnd[{self.window + 1}]/usr/ctxtDY_PATH").text = 'C:/Temp'
+            self.session.findById(f"wnd[{self.window + 1}]/usr/ctxtDY_FILENAME").text = f"{uid}.txt"
+            self.session.findById(f"wnd[{self.window + 1}]/tbar[0]/btn[0]").press()
+            self.session.findById(f"wnd[{self.window}]/tbar[0]/btn[8]").press()
+            if os.path.exists(f'C:/Temp/{uid}.txt'):
+                os.remove(f'C:/Temp/{uid}.txt')
         except:
             if not skip_error: raise Exception("Multiple selection paste data failed.")
 
-    def navigate_into_menu_header(self, path: str) -> None:
+    def navigate_into_menu_header(self, *nested_path: str) -> None:
+        """
+        This function needs to receive several strings that have the texts that appear written in the header destination
+        that you want to press, it must be written in the order that it appears in the SAP header
+        :param nested_path: The nested path that you want to navigate into the header
+        """
         id_path = 'wnd[0]/mbar'
-        if ';' not in path:
-            raise Exception("The menu path must be in the format 'path1;path2;path3'")
-
-        list_of_paths = path.split(';')
-        for active_path in list_of_paths:
+        for active_path in nested_path:
             children = self.session.findById(id_path).Children
             for i in range(children.Count):
                 Obj = children(i)
@@ -540,7 +714,17 @@ class SAP:
                     break
         self.session.findById(id_path).Select()
 
-    def save_file(self, file_name: str, path: str, option: int = 0, type_of_file: str = 'txt', skip_error: bool = False) -> None:
+    def save_file(self, file_name: str, path: str, option: int = 0, type_of_file: str = 'txt',
+                  skip_error: bool = False) -> None:
+        """
+        This function will easily navigate into SAP menu header to save the current transaction data, commonly used to
+        extract data Labels
+        :param file_name: The name of the file that you want to save
+        :param path: The path that you want to save the file
+        :param option: The txt option of save format 0=>Unconverted,1=>Text with Tabs,2=>Rich text format
+        :param type_of_file: The extension that you want for the file
+        :param skip_error: Skip this function if occur any error
+        """
         try:
             if 'xls' in type_of_file:
                 self.session.findById("wnd[0]/mbar/menu[0]/menu[1]/menu[1]").Select()
@@ -568,7 +752,23 @@ class SAP:
         except:
             raise Exception("View in list form failed.")
 
+    def get_label(self) -> Label:
+        """
+        Get the SAP Label object from the current SAP Label Window
+        :return: A SAP Label object, that can be used to extract data from Label components in SAP
+        """
+        try:
+            self.window = self.__active_window()
+            label = Label(self.session, self.window)
+            return label
+        except:
+            raise Exception("Get label failed.")
+
     def get_table(self) -> Table:
+        """
+        Get the SAP Table object from the current SAP Table Window
+        :return: A SAP Table object, that can be used to extract data from Table components in SAP
+        """
         try:
             self.window = self.__active_window()
             table_obj = self.__scroll_through_table(f'wnd[{self.window}]/usr')
@@ -601,18 +801,35 @@ class SAP:
         except:
             raise Exception("My table get cell value failed.")
 
-    # my_table tips:
-    # VisibleRowCount => Count the number of Visible Rows in the table
-    # RowCount => Count the number of Rows inside the table
-
-    def get_shell(self) -> Shell:
+    def get_tree(self) -> Tree:
+        """
+        Get the SAP Tree object from the current SAP Tree Window
+        :return: A SAP Tree object, that can be used to extract data from Tree tables in SAP
+        """
         try:
             self.window = self.__active_window()
-            shell_obj = self.__scroll_through_shell(f'wnd[{self.window}]/usr')
-            
+            tree_obj = self.__scroll_through_tree(f'wnd[{self.window}]')
+
+            if not tree_obj:
+                raise Exception("Tree Object not found")
+
+            tree = Tree(tree_obj)
+            return tree
+        except:
+            raise Exception("Get Tree failed.")
+
+    def get_shell(self) -> Shell:
+        """
+        Get the SAP Shell object from the current SAP Shell Window
+        :return: A SAP Shell object, that can be used to extract data from Shell tables in SAP
+        """
+        try:
+            self.window = self.__active_window()
+            shell_obj = self.__scroll_through_shell(f'wnd[{self.window}]')
+
             if not shell_obj:
                 raise Exception()
-            
+
             shell = Shell(shell_obj, self.session)
             return shell
         except:
@@ -673,6 +890,10 @@ class SAP:
             raise Exception("Get my grid count rows failed.")
 
     def get_footer_message(self) -> str:
+        """
+        Get the message text that is in the SAP Footer
+        :return: A String with the footer message
+        """
         try:
             return self.session.findById("wnd[0]/sbar").Text
         except:
