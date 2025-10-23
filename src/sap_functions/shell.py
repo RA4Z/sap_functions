@@ -108,6 +108,20 @@ class Shell:
         except:
             raise Exception("Count rows failed.")
 
+    def get_column_id(self, column_name: str) -> str:
+        """
+        This function will return the column id based on its column name
+        :param column_name: The target column's name
+        :return: A string with the respective column id
+        """
+        grid_column = self.shell_obj.ColumnOrder
+        cols = self.shell_obj.ColumnCount
+
+        for c in range(cols):
+            item = self.shell_obj.getCellValue(-1, grid_column(c))
+            if column_name == item:
+                return grid_column(c)
+
     def get_cell_value(self, index: int, column_id: str) -> str:
         """
         Get the value of a specific Shell cell
