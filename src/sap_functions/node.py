@@ -22,6 +22,13 @@ class Node:
                 else:
                     target_index -= 1
 
+    def click_selected_node(self):
+        """
+        Double-click the Node selected previously
+        """
+        node_id = self.node_obj.SelectedNode
+        self.node_obj.doubleClickNode(node_id)
+
     def expand_selected_node(self):
         """
         Expand the Node selected previously
