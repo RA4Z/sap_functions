@@ -49,6 +49,12 @@ def test_shell_get_cell_value():
    cell_value = shell.get_cell_value(0, os.getenv("transaction_1_shell_column_id"))
    assert type(cell_value).__name__ == "str"
 
+def test_shell_press_button():
+   shell.press_button(os.getenv("transaction_1_shell_button"))
+   exec(os.getenv("transaction_1_after_press_button"))
+   shell.press_nested_button(*os.getenv("transaction_1_shell_nested_button").split(","))
+   exec(os.getenv("transaction_1_after_press_button"))
+
 def test_shell_select_actions():
    shell.select_all_content()
    shell.select_column(os.getenv("transaction_1_shell_column_id"))   

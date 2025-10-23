@@ -31,13 +31,13 @@ def test_table_count_visible_rows():
    rows = table.count_visible_rows()
    assert type(rows).__name__ == "int"
 
-def test_table_get_cell_value():
+def test_table_cell_value():
    cell_value = table.get_cell_value(0, 1)
-   print(type(cell_value).__name__)
    assert type(cell_value).__name__ == "str"
 
 def test_table_select_actions():
    table.select_entire_row(0)
+   table.unselect_entire_row(0)
    table.click_cell(0, 0, True)   
    exec(os.getenv("transaction_2_after_cell_click"))
 
