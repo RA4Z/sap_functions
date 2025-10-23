@@ -3,10 +3,10 @@ import re
 import os
 import time
 import uuid
-import warnings
+from .tree import Tree
+from .node import Node
 from .shell import Shell
 from .table import Table
-from .tree import Tree
 from .label import Label
 from typing import Union
 
@@ -145,10 +145,10 @@ class SAP:
                 result = self.__scroll_through_tree(extension + '/' + children[i].name)
         return result
 
-    def __scroll_through_grid(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
+    def __scroll_through_node(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
         if self.session.findById(extension).Type == 'GuiShell':
             try:
-                var = self.session.findById(extension).RowCount
+                var = self.session.findById(extension).GetHierarchyTitle()
                 return self.session.findById(extension)
             except:
                 pass
@@ -158,21 +158,21 @@ class SAP:
             if result:
                 break
             if children[i].Type == 'GuiCustomControl':
-                result = self.__scroll_through_grid(extension + '/cntl' + children[i].name)
+                result = self.__scroll_through_tree(extension + '/cntl' + children[i].name)
             if children[i].Type == 'GuiSimpleContainer':
-                result = self.__scroll_through_grid(extension + '/sub' + children[i].name)
+                result = self.__scroll_through_tree(extension + '/sub' + children[i].name)
             if children[i].Type == 'GuiScrollContainer':
-                result = self.__scroll_through_grid(extension + '/ssub' + children[i].name)
+                result = self.__scroll_through_tree(extension + '/ssub' + children[i].name)
             if children[i].Type == 'GuiTableControl':
-                result = self.__scroll_through_grid(extension + '/tbl' + children[i].name)
+                result = self.__scroll_through_tree(extension + '/tbl' + children[i].name)
             if children[i].Type == 'GuiTab':
-                result = self.__scroll_through_grid(extension + '/tabp' + children[i].name)
+                result = self.__scroll_through_tree(extension + '/tabp' + children[i].name)
             if children[i].Type == 'GuiTabStrip':
-                result = self.__scroll_through_grid(extension + '/tabs' + children[i].name)
+                result = self.__scroll_through_tree(extension + '/tabs' + children[i].name)
             if children[
                 i].Type in ("GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar "
                             "GuiUserArea GuiTitlebar"):
-                result = self.__scroll_through_grid(extension + '/' + children[i].name)
+                result = self.__scroll_through_tree(extension + '/' + children[i].name)
         return result
 
     def __scroll_through_table(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
@@ -741,8 +741,6 @@ class SAP:
         except:
             if not skip_error: raise Exception("Save file failed.")
 
-
-
     def get_label(self) -> Label:
         """
         Get the SAP Label object from the current SAP Label Window
@@ -803,6 +801,24 @@ class SAP:
             return shell
         except:
             raise Exception("Get shell failed.")
+
+    def get_node(self) -> Node:
+        """
+        Get the SAP Node object from the current SAP Node Window
+        :return: A SAP Node object, that can be used to extract data from Node components in SAP
+        """
+        try:
+            self.window = self.__active_window()
+            node_obj = self.__scroll_through_node(f'wnd[{self.window}]')
+
+            if not node_obj:
+                raise Exception()
+
+            node = Node(node_obj)
+            return node
+
+        except:
+            raise Exception("Get node failed.")
 
     def get_footer_message(self) -> str:
         """
