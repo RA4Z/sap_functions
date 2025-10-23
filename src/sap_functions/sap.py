@@ -18,11 +18,12 @@ from typing import Union
 class SAP:
 
     def __init__(self, window: int = 0) -> None:
-        self.side_index = None
         self.desired_operator = None
+        self.selected_tab_id = None
         self.desired_text = None
-        self.field_name = None
         self.target_index = None
+        self.side_index = None
+        self.field_name = None
 
         connection = self.__get_sap_connection()
 
@@ -36,6 +37,7 @@ class SAP:
         self.__count_and_create_sap_screens(connection, window)
         self.session = connection.Children(window)
         self.window = self.__active_window()
+        self.selected_tab_name = ''
 
     def __get_sap_connection(self) -> win32com.client.CDispatch:
         try:
@@ -57,19 +59,44 @@ class SAP:
         for match in matches:
             return int(match)
 
-    def __scroll_through_tabs(self, area: win32com.client.CDispatch, extension: str,
-                              selected_tab: int) -> win32com.client.CDispatch:
+    def __scroll_through_tabs_by_id(self, area: win32com.client.CDispatch, extension: str,
+                                    selected_tab: int) -> win32com.client.CDispatch:
         children = area.Children
         for child in children:
             if child.Type == "GuiTabStrip":
                 extension = extension + "/tabs" + child.name
-                return self.__scroll_through_tabs(self.session.findById(extension), extension, selected_tab)
+                return self.__scroll_through_tabs_by_id(self.session.findById(extension), extension, selected_tab)
             if child.Type == "GuiTab":
                 extension = extension + "/tabp" + str(children[selected_tab].name)
-                return self.__scroll_through_tabs(self.session.findById(extension), extension, selected_tab)
+                self.selected_tab_id = selected_tab
+                self.selected_tab_name = children[selected_tab].text
+                return self.__scroll_through_tabs_by_id(self.session.findById(extension), extension, selected_tab)
             if child.Type == "GuiSimpleContainer":
                 extension = extension + "/sub" + child.name
-                return self.__scroll_through_tabs(self.session.findById(extension), extension, selected_tab)
+                return self.__scroll_through_tabs_by_id(self.session.findById(extension), extension, selected_tab)
+            if child.Type == "GuiScrollContainer" and 'tabp' in extension:
+                extension = extension + "/ssub" + child.name
+                area = self.session.findById(extension)
+                return area
+        return area
+
+    def __scroll_through_tabs_by_name(self, area: win32com.client.CDispatch, extension: str,
+                                      tab_name: str) -> win32com.client.CDispatch:
+        children = area.Children
+        for i, child in enumerate(children):
+            if child.Type == "GuiTabStrip":
+                extension = extension + "/tabs" + child.name
+                return self.__scroll_through_tabs_by_name(self.session.findById(extension), extension, tab_name)
+            if child.Type == "GuiTab":
+                temp_extension = extension + "/tabp" + str(child.name)
+                if str(self.session.findById(temp_extension).text).strip() == tab_name:
+                    extension = extension + "/tabp" + str(child.name)
+                    self.selected_tab_id = i
+                    self.selected_tab_name = child.text
+                    return self.__scroll_through_tabs_by_name(self.session.findById(extension), extension, tab_name)
+            if child.Type == "GuiSimpleContainer":
+                extension = extension + "/sub" + child.name
+                return self.__scroll_through_tabs_by_name(self.session.findById(extension), extension, tab_name)
             if child.Type == "GuiScrollContainer" and 'tabp' in extension:
                 extension = extension + "/ssub" + child.name
                 area = self.session.findById(extension)
@@ -204,7 +231,8 @@ class SAP:
                 result = self.__scroll_through_table(extension + '/' + children[i].name)
         return result
 
-    def __scroll_through_fields(self, extension: str, objective: str, selected_tab: int) -> bool:
+    def __scroll_through_fields(self, extension: str, objective: str) -> bool:
+        selected_tab = self.selected_tab_id
         children = self.session.findById(extension).Children
         result = False
         for i in range(len(children)):
@@ -215,24 +243,23 @@ class SAP:
                 break
 
             if not result and children[i].Type == "GuiTabStrip" and 'ssub' not in extension:
-                result = self.__scroll_through_fields(extension + "/tabs" + children[i].name, objective, selected_tab)
+                result = self.__scroll_through_fields(extension + "/tabs" + children[i].name, objective)
 
             if not result and children[i].Type == "GuiTab" and 'tabp' not in extension:
-                result = self.__scroll_through_fields(extension + "/tabp" + str(children[selected_tab].name), objective,
-                                                      selected_tab)
+                result = self.__scroll_through_fields(extension + "/tabp" + str(children[selected_tab].name), objective)
 
             if not result and children[i].Type == "GuiSimpleContainer":
-                result = self.__scroll_through_fields(extension + "/sub" + children[i].name, objective, selected_tab)
+                result = self.__scroll_through_fields(extension + "/sub" + children[i].name, objective)
 
             if not result and children[i].Type == "GuiScrollContainer":
-                result = self.__scroll_through_fields(extension + "/ssub" + children[i].name, objective, selected_tab)
+                result = self.__scroll_through_fields(extension + "/ssub" + children[i].name, objective)
 
             if not result and children[i].Type == "GuiCustomControl":
-                result = self.__scroll_through_fields(extension + "/cntl" + children[i].name, objective, selected_tab)
+                result = self.__scroll_through_fields(extension + "/cntl" + children[i].name, objective)
 
             if not result and children[i].Type in (
                     "GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar GuiUserArea GuiTitlebar"):
-                result = self.__scroll_through_fields(extension + "/" + children[i].name, objective, selected_tab)
+                result = self.__scroll_through_fields(extension + "/" + children[i].name, objective)
 
         return result
 
@@ -390,7 +417,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Select main screen failed.")
 
-    def clean_all_fields(self, selected_tab: int = 0, skip_error=False) -> None:
+    def clean_all_fields(self, selected_tab: Union[int, str], skip_error=False) -> None:
         """
         Clean all the input fields in the actual screen
         :param selected_tab: Transaction desired tab
@@ -398,9 +425,14 @@ class SAP:
         """
         try:
             self.window = self.__active_window()
-            area = self.__scroll_through_tabs(self.session.findById(f"wnd[{self.window}]/usr"),
-                                              f"wnd[{self.window}]/usr",
-                                              selected_tab)
+            if type(selected_tab).__name__ == 'int':
+                area = self.__scroll_through_tabs_by_id(self.session.findById(f"wnd[{self.window}]/usr"),
+                                                        f"wnd[{self.window}]/usr", selected_tab)
+            else:
+                area = self.__scroll_through_tabs_by_name(self.session.findById(f"wnd[{self.window}]/usr"),
+                                                          f"wnd[{self.window}]/usr", selected_tab)
+
+            area.Select()
             children = area.Children
             for child in children:
                 if child.Type == "GuiCTextField":
@@ -411,7 +443,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Clean all fields failed.")
 
-    def run_actual_transaction(self, skip_error=False) -> None:
+    def run_actual_transaction(self, skip_error: bool = False) -> None:
         """
         Run the active transaction, this function will try to press Enter, and after that will try to press F8
         :param skip_error: Skip this function if occur any error
@@ -445,7 +477,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Insert variant failed.")
 
-    def change_active_tab(self, selected_tab: int, skip_error: bool = False) -> None:
+    def change_active_tab(self, selected_tab: Union[int, str], skip_error: bool = False) -> None:
         """
         This function will try to select the transaction tab using the number "selected_tab"
         :param selected_tab: Tab desired number, the SAP default tab is 0
@@ -453,10 +485,12 @@ class SAP:
         """
         try:
             self.window = self.__active_window()
-
-            area = self.__scroll_through_tabs(self.session.findById(f"wnd[{self.window}]/usr"),
-                                              f"wnd[{self.window}]/usr",
-                                              selected_tab)
+            if type(selected_tab).__name__ == 'int':
+                area = self.__scroll_through_tabs_by_id(self.session.findById(f"wnd[{self.window}]/usr"),
+                                                        f"wnd[{self.window}]/usr", selected_tab)
+            else:
+                area = self.__scroll_through_tabs_by_name(self.session.findById(f"wnd[{self.window}]/usr"),
+                                                          f"wnd[{self.window}]/usr", selected_tab)
             try:
                 area.Select()
             except:
@@ -464,7 +498,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Change active tab failed.")
 
-    def write_text_field(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0,
+    def write_text_field(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: Union[int, str] = 0,
                          skip_error: bool = False) -> None:
         """
         This function will write the desired text in the respective input at the side of the field name
@@ -479,14 +513,14 @@ class SAP:
             self.field_name = field_name
             self.desired_text = desired_text
             self.target_index = target_index
-            if selected_tab > 0:
+            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
                 self.change_active_tab(selected_tab)
-            if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'write_text_field', selected_tab):
+            if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'write_text_field'):
                 raise Exception()
         except:
             if not skip_error: raise Exception("Write text field failed.")
 
-    def write_text_field_until(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0,
+    def write_text_field_until(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: Union[int, str] = 0,
                                skip_error: bool = False) -> None:
         """
         This function will write the desired text in the "until" field in the respective input at the side of the
@@ -502,14 +536,14 @@ class SAP:
             self.field_name = field_name
             self.desired_text = desired_text
             self.target_index = target_index
-            if selected_tab > 0:
+            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
                 self.change_active_tab(selected_tab)
-            if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'write_text_field_until', selected_tab):
+            if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'write_text_field_until'):
                 raise Exception()
         except:
             if not skip_error: raise Exception("Write text field until failed.")
 
-    def choose_text_combo(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: int = 0,
+    def choose_text_combo(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: Union[int, str] = 0,
                           skip_error: bool = False) -> None:
         """
         This function has the ability to choose a specific text that is found within a combo box component
@@ -524,14 +558,14 @@ class SAP:
             self.field_name = field_name
             self.desired_text = desired_text
             self.target_index = target_index
-            if selected_tab > 0:
+            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
                 self.change_active_tab(selected_tab)
-            if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'choose_text_combo', selected_tab):
+            if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'choose_text_combo'):
                 raise Exception()
         except:
             if not skip_error: raise Exception("Choose text combo failed.")
 
-    def flag_field(self, field_name: str, desired_operator: bool, target_index: int = 0, selected_tab: int = 0,
+    def flag_field(self, field_name: str, desired_operator: bool, target_index: int = 0, selected_tab: Union[int, str] = 0,
                    skip_error: bool = False) -> None:
         """
         This function can flag and unflag checkboxes based on the field_name, it will flag/unflag the checkbox in the
@@ -547,15 +581,15 @@ class SAP:
             self.field_name = field_name
             self.desired_operator = desired_operator
             self.target_index = target_index
-            if selected_tab > 0:
+            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
                 self.change_active_tab(selected_tab)
-            if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'flag_field', selected_tab):
+            if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'flag_field'):
                 raise Exception()
         except:
             if not skip_error: raise Exception("Flag field failed.")
 
     def flag_field_at_side(self, field_name: str, desired_operator: bool, side_index: int = 0, target_index: int = 0,
-                           selected_tab: int = 0, skip_error: bool = False) -> None:
+                           selected_tab: Union[int, str] = 0, skip_error: bool = False) -> None:
         """
         This function can flag and unflag checkboxes based on the field_name, it will flag/unflag the checkbox at the
         side of the respective field_name
@@ -572,14 +606,14 @@ class SAP:
             self.desired_operator = desired_operator
             self.target_index = target_index
             self.side_index = side_index
-            if selected_tab > 0:
+            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
                 self.change_active_tab(selected_tab)
-            if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'flag_field_at_side', selected_tab):
+            if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'flag_field_at_side'):
                 raise Exception()
         except:
             if not skip_error: raise Exception("Flag field at side failed.")
 
-    def option_field(self, field_name: str, target_index: int = 0, selected_tab: int = 0,
+    def option_field(self, field_name: str, target_index: int = 0, selected_tab: Union[int, str] = 0,
                      skip_error: bool = False) -> None:
         """
         This function will select an option field
@@ -592,14 +626,14 @@ class SAP:
             self.window = self.__active_window()
             self.field_name = field_name
             self.target_index = target_index
-            if selected_tab > 0:
+            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
                 self.change_active_tab(selected_tab)
-            if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'option_field', selected_tab):
+            if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'option_field'):
                 raise Exception()
         except:
             if not skip_error: raise Exception("Option field failed.")
 
-    def press_button(self, field_name: str, target_index: int = 0, selected_tab: int = 0,
+    def press_button(self, field_name: str, target_index: int = 0, selected_tab: Union[int, str] = 0,
                      skip_error: bool = False) -> None:
         """
         Press any button in the SAP screens, except in shells and tables components
@@ -612,14 +646,14 @@ class SAP:
             self.window = self.__active_window()
             self.field_name = field_name
             self.target_index = target_index
-            if selected_tab > 0:
+            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
                 self.change_active_tab(selected_tab)
-            if not self.__scroll_through_fields(f"wnd[{self.window}]", 'press_button', selected_tab):
+            if not self.__scroll_through_fields(f"wnd[{self.window}]", 'press_button'):
                 raise Exception()
         except:
             if not skip_error: raise Exception("Press button failed.")
 
-    def multiple_selection_field(self, field_name: str, target_index: int = 0, selected_tab: int = 0,
+    def multiple_selection_field(self, field_name: str, target_index: int = 0, selected_tab: Union[int, str] = 0,
                                  skip_error: bool = False) -> None:
         """
         This function will press the "Multiple Selection" button in the respective field
@@ -632,14 +666,14 @@ class SAP:
             self.window = self.__active_window()
             self.field_name = field_name
             self.target_index = target_index
-            if selected_tab > 0:
+            if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
                 self.change_active_tab(selected_tab)
-            if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'multiple_selection_field', selected_tab):
+            if not self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'multiple_selection_field'):
                 raise Exception()
         except:
             if not skip_error: raise Exception("Multiple selection field failed.")
 
-    def find_text_field(self, field_name: str, selected_tab=0) -> bool:
+    def find_text_field(self, field_name: str, selected_tab: Union[int, str] = 0) -> bool:
         """
         Verify if a text exists in the SAP screen
         :param field_name: The text that you want to search
@@ -648,11 +682,11 @@ class SAP:
         """
         self.window = self.__active_window()
         self.field_name = field_name
-        if selected_tab > 0:
+        if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
             self.change_active_tab(selected_tab)
-        return self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'find_text_field', selected_tab)
+        return self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'find_text_field')
 
-    def get_text_at_side(self, field_name, side_index: int, target_index: int = 0, selected_tab: int = 0) -> str:
+    def get_text_at_side(self, field_name, side_index: int, target_index: int = 0, selected_tab: Union[int, str] = 0) -> str:
         """
         This function will return the text next to the text received as a parameter
         :param field_name: The text that you want to search
@@ -665,12 +699,13 @@ class SAP:
         self.field_name = field_name
         self.target_index = target_index
         self.side_index = side_index
-        if selected_tab > 0:
+        if selected_tab != self.selected_tab_id and selected_tab != self.selected_tab_name:
             self.change_active_tab(selected_tab)
-        if self.__scroll_through_fields(f"wnd[{self.window}]", 'get_text_at_side', selected_tab):
+        if self.__scroll_through_fields(f"wnd[{self.window}]", 'get_text_at_side'):
             return self.found_text
 
-    def multiple_selection_paste_data(self, data: list[str], delete_values: bool = False, skip_error: bool = False) -> None:
+    def multiple_selection_paste_data(self, data: list[str], delete_values: bool = False,
+                                      skip_error: bool = False) -> None:
         """
         With the Multiple Selection window open, it's possible to execute this function to easily paste all the data
         from a list
