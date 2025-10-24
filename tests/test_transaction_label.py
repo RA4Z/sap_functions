@@ -29,8 +29,3 @@ def test_get_label():
    label = sap.get_label()
 
    label.get_all_screen_labels()
-
-test_transaction()
-test_insert_data_transaction()
-test_run_transaction()
-test_get_label()
