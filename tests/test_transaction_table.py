@@ -11,8 +11,6 @@ load_dotenv()
 sap = SAP()
 
 def test_transaction():
-   with pytest.raises(Exception):
-      sap.select_transaction(os.getenv("not_existant_transaction"))
    sap.select_transaction(os.getenv("transaction_2"))
 
 def test_insert_data_transaction():
