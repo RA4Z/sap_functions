@@ -6,11 +6,12 @@ class Node:
     def __init__(self, node_obj: win32com.client.CDispatch):
         self.node_obj = node_obj
 
-    def select_node(self, node_text: str, target_index: int = 0):
+    def select_node(self, node_text: str, target_index: int = 0, skip_error: bool = False):
         """
         Select a specific Node based on the text inside of it
         :param node_text: The text in the desired Node
         :param target_index: Target index, determines how many occurrences precede the desired field
+        :param skip_error: Skip this function if occur any error
         """
         parent = self.node_obj.GetAllNodeKeys()
         for item in parent:
@@ -21,6 +22,8 @@ class Node:
                     return
                 else:
                     target_index -= 1
+        if not skip_error:
+            raise Exception(f"Node with text {node_text} was not found!")
 
     def click_selected_node(self):
         """
