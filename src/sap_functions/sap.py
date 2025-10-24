@@ -358,6 +358,7 @@ class SAP:
                                 tooltip_button = children(index).GetButtonTooltip(i)
                                 if self.__field_name in tooltip_button:
                                     children(index).pressButton(id_button)
+                                    return True
                     except:
                         return False
             except:
