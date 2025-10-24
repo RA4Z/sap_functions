@@ -13,6 +13,7 @@ class Grid:
             {
                 'get_id_method_name': 'GetToolbarButtonId',
                 'get_tooltip_method_name': 'GetToolbarButtonTooltip',
+                'get_text_method_name': 'GetToolbarButtonText',
                 'press_method_name': 'pressToolbarContextButton',
                 'press_context_name': 'pressToolbarContextButton',
                 'select_context_item_name': 'SelectContextMenuItemByText'
@@ -20,6 +21,7 @@ class Grid:
             {
                 'get_id_method_name': 'GetButtonId',
                 'get_tooltip_method_name': 'GetButtonTooltip',
+                'get_text_method_name': 'GetToolbarButtonText',
                 'press_method_name': 'pressButton',
                 'press_context_name': 'pressContextButton',
                 'select_context_item_name': 'SelectContextMenuItemByText'
@@ -194,12 +196,14 @@ class Grid:
             try:
                 get_id_func = getattr(self.grid_obj, command_info['get_id_method_name'])
                 get_tooltip_func = getattr(self.grid_obj, command_info['get_tooltip_method_name'])
+                get_text_func = getattr(self.grid_obj, command_info['get_text_method_name'])
                 press_func = getattr(self.grid_obj, command_info['press_method_name'])
 
-                for i in range(100):
+                for i in range(self.grid_obj.ToolbarButtonCount):
                     button_id = get_id_func(i)
                     button_tooltip = get_tooltip_func(i)
-                    if field_name == button_tooltip:
+                    button_text = get_text_func(i)
+                    if field_name in button_tooltip or field_name in button_text:
                         press_func(button_id)
                         return
             except:
