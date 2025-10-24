@@ -149,6 +149,7 @@ class Table:
         :return: A dictionary with 'header' and 'content' items
         """
         try:
+            self.__scroll_through_table(f'wnd[{self.window}]/usr').VerticalScrollbar.Position = 0
             obj_now = self.__scroll_through_table(f'wnd[{self.window}]/usr')
             added_rows = []
 
