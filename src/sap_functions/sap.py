@@ -22,6 +22,7 @@ class SAP:
         self.__selected_tab_id = None
         self.__desired_text = None
         self.__target_index = None
+        self.__target_tab = None
         self.__side_index = None
         self.__field_name = None
         self.__selected_tab_name = ''
@@ -246,7 +247,10 @@ class SAP:
                 result = self.__scroll_through_fields(extension + "/tabs" + children[i].name, objective)
 
             if not result and children[i].Type == "GuiTab" and 'tabp' not in extension:
-                result = self.__scroll_through_fields(extension + "/tabp" + str(children[selected_tab].name), objective)
+                if objective != 'select_tab_by_name':
+                    result = self.__scroll_through_fields(extension + "/tabp" + str(children[selected_tab].name), objective)
+                else:
+                    result = self.__scroll_through_fields(extension + "/tabp" + str(children[i].name), objective)
 
             if not result and children[i].Type == "GuiSimpleContainer":
                 result = self.__scroll_through_fields(extension + "/sub" + children[i].name, objective)
@@ -264,6 +268,16 @@ class SAP:
         return result
 
     def __generic_conditionals(self, index: int, children: win32com.client.CDispatch, objective: str) -> bool:
+        if objective == 'select_tab_by_name':
+            if str(children(index).Text).strip() == self.__target_tab:
+                try:
+                    self.__selected_tab_id = index
+                    self.__selected_tab_name = self.__field_name
+                    children(index).Select()
+                    return True
+                except:
+                    return False
+
         if objective == 'write_text_field':
             if children(index).Text == self.__field_name:
                 if self.__target_index == 0:
@@ -429,7 +443,7 @@ class SAP:
         except:
             if not skip_error: raise Exception("Select main screen failed.")
 
-    def clean_all_fields(self, selected_tab: Union[int, str], skip_error=False) -> None:
+    def clean_all_fields(self, selected_tab: Union[int, str] = 0, skip_error=False) -> None:
         """
         Clean all the input fields in the actual screen
         :param selected_tab: Transaction desired tab
@@ -444,7 +458,6 @@ class SAP:
                 area = self.__scroll_through_tabs_by_name(self.session.findById(f"wnd[{self.window}]/usr"),
                                                           f"wnd[{self.window}]/usr", selected_tab)
 
-            area.Select()
             children = area.Children
             for child in children:
                 if child.Type == "GuiCTextField":
@@ -500,13 +513,14 @@ class SAP:
             if type(selected_tab).__name__ == 'int':
                 area = self.__scroll_through_tabs_by_id(self.session.findById(f"wnd[{self.window}]/usr"),
                                                         f"wnd[{self.window}]/usr", selected_tab)
+                try:
+                    area.Select()
+                except:
+                    pass
             else:
-                area = self.__scroll_through_tabs_by_name(self.session.findById(f"wnd[{self.window}]/usr"),
-                                                          f"wnd[{self.window}]/usr", selected_tab)
-            try:
-                area.Select()
-            except:
-                pass
+                self.__target_tab = selected_tab
+                self.__scroll_through_fields(f"wnd[{self.window}]/usr", 'select_tab_by_name')
+
         except:
             if not skip_error: raise Exception("Change active tab failed.")
 
