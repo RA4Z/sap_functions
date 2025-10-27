@@ -20,7 +20,21 @@ def test_select_project():
    exec(os.getenv("transaction_4_pep_element"))
    sap.run_actual_transaction()
 
-def test_expand_and_select_nodes():
+
+node = None
+def test_get_node():
+   global node
    node = sap.get_node()
+   
+def test_expand_node():
    node.expand_selected_node()
+
+def test_select_node():
    node.select_node(os.getenv("transaction_4_selected_node"))
+
+def test_click_selected_node():
+   node.click_selected_node()
+
+def test_get_node_content():
+   content = node.get_node_content()
+   assert type(content).__name__ == "list"
