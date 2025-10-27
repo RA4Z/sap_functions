@@ -402,6 +402,8 @@ class SAP:
                     except:
                         return False
                     return False
+                else:
+                    self.__target_index -= 1
 
         if objective == 'set_focus':
             if children(index).Text == self.__field_name:
@@ -422,6 +424,8 @@ class SAP:
                         return True
                     except:
                         return False
+                else:
+                    self.__target_index -= 1
         return False
 
     def select_transaction(self, transaction: str) -> None:
