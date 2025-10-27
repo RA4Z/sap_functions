@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sap_functions"
-version = "1.0"
+version = "1.1"
 authors = [
   { name="Gabriel Volles Marinho", email="gabrielvmarinho1711@gmail.com" },
   { name="Robert Aron Zimmermann", email="robert.raz@gmail.com" },
