@@ -1,59 +1,19 @@
-import re
+from .utils import *
 import copy
-import win32com.client
-from typing import Union
 
 
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/ce1d9e64355d49568e5def5271aea2db.html?locale=en-US
 class Table:
     def __init__(self, table, session, target_index: int):
-        self.__component_target_index = target_index
+        self._component_target_index = target_index
         self.__target_index = target_index
         self.table_obj = table
         self.session = session
-        self.window = self.__active_window()
-
-    def __active_window(self) -> int:
-        regex = re.compile('[0-9]')
-        matches = regex.findall(self.session.ActiveWindow.name)
-        for match in matches:
-            return int(match)
+        self.window = active_window(self)
 
     def __return_table(self):
-        self.__component_target_index = copy.copy(self.__target_index)
-        return self.__scroll_through_table(f'wnd[{self.window}]/usr')
-
-    def __scroll_through_table(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
-        if 'tbl' in extension:
-            try:
-                if self.__component_target_index == 0:
-                    return self.session.findById(extension)
-                else:
-                    self.__component_target_index -= 1
-            except:
-                pass
-        children = self.session.findById(extension).Children
-        result = False
-        for i in range(len(children)):
-            if result:
-                break
-            if children[i].Type == 'GuiCustomControl':
-                result = self.__scroll_through_table(extension + '/cntl' + children[i].name)
-            if children[i].Type == 'GuiSimpleContainer':
-                result = self.__scroll_through_table(extension + '/sub' + children[i].name)
-            if children[i].Type == 'GuiScrollContainer':
-                result = self.__scroll_through_table(extension + '/ssub' + children[i].name)
-            if children[i].Type == 'GuiTableControl':
-                result = self.__scroll_through_table(extension + '/tbl' + children[i].name)
-            if children[i].Type == 'GuiTab':
-                result = self.__scroll_through_table(extension + '/tabp' + children[i].name)
-            if children[i].Type == 'GuiTabStrip':
-                result = self.__scroll_through_table(extension + '/tabs' + children[i].name)
-            if children[
-                i].Type in ("GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar "
-                            "GuiUserArea GuiTitlebar"):
-                result = self.__scroll_through_table(extension + '/' + children[i].name)
-        return result
+        self._component_target_index = copy.copy(self.__target_index)
+        return scroll_through_table(self, f'wnd[{self.window}]/usr')
 
     def get_cell_value(self, row: int, column: int, skip_error: bool = False) -> str:
         """

@@ -1,14 +1,13 @@
-import win32com
-from typing import Union
-import re
+from .utils import *
 
 
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/4af24c3281fb4d6a809e53238562d3b2.html?locale=en-US
 class Grid:
     def __init__(self, grid_obj: win32com.client.CDispatch, session: win32com.client.CDispatch):
+        self._component_target_index = 0
         self.grid_obj = grid_obj
         self.session = session
-        self.window = self.__active_window()
+        self.window = active_window(self)
         self.commands_spec = [
             {
                 'get_id_method_name': 'GetToolbarButtonId',
@@ -28,50 +27,14 @@ class Grid:
             }
         ]
 
-    def __active_window(self) -> int:
-        regex = re.compile('[0-9]')
-        matches = regex.findall(self.session.ActiveWindow.name)
-        for match in matches:
-            return int(match)
-        
-    def __scroll_through_grid(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
-        if self.session.findById(extension).Type == 'GuiShell':
-            try:
-                var = self.session.findById(extension).RowCount
-                return self.session.findById(extension)
-            except:
-                pass
-        children = self.session.findById(extension).Children
-        result = False
-        for i in range(len(children)):
-            if result:
-                break
-            if children[i].Type == 'GuiCustomControl':
-                result = self.__scroll_through_grid(extension + '/cntl' + children[i].name)
-            if children[i].Type == 'GuiSimpleContainer':
-                result = self.__scroll_through_grid(extension + '/sub' + children[i].name)
-            if children[i].Type == 'GuiScrollContainer':
-                result = self.__scroll_through_grid(extension + '/ssub' + children[i].name)
-            if children[i].Type == 'GuiTableControl':
-                result = self.__scroll_through_grid(extension + '/tbl' + children[i].name)
-            if children[i].Type == 'GuiTab':
-                result = self.__scroll_through_grid(extension + '/tabp' + children[i].name)
-            if children[i].Type == 'GuiTabStrip':
-                result = self.__scroll_through_grid(extension + '/tabs' + children[i].name)
-            if children[
-                i].Type in ("GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar "
-                            "GuiUserArea GuiTitlebar"):
-                result = self.__scroll_through_grid(extension + '/' + children[i].name)
-        return result
-    
     def select_layout(self, layout: str) -> None:
         """
         This function will select the desired Grid Layout when a SAP select Layout Pop up is open
         :param layout: The desired Layout name
         """
         try:
-            window = self.__active_window()
-            grid_layout_obj = self.__scroll_through_grid(f'wnd[{window}]/usr')
+            window = active_window(self)
+            grid_layout_obj = scroll_through_grid(self, f'wnd[{window}]/usr')
 
             if not grid_layout_obj:
                 raise Exception()
