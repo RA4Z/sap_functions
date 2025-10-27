@@ -18,6 +18,7 @@ from typing import Union
 class SAP:
 
     def __init__(self, window: int = 0) -> None:
+        self.__component_target_index = None
         self.__desired_operator = None
         self.__selected_tab_id = None
         self.__desired_text = None
@@ -108,7 +109,10 @@ class SAP:
         if self.session.findById(extension).Type == 'GuiShell':
             try:
                 var = self.session.findById(extension).RowCount
-                return self.session.findById(extension)
+                if self.__component_target_index == 0:
+                    return self.session.findById(extension)
+                else:
+                    self.__component_target_index -= 1
             except:
                 pass
 
@@ -177,7 +181,10 @@ class SAP:
         if self.session.findById(extension).Type == 'GuiShell':
             try:
                 var = self.session.findById(extension).GetHierarchyTitle()
-                return self.session.findById(extension)
+                if self.__component_target_index == 0:
+                    return self.session.findById(extension)
+                else:
+                    self.__component_target_index -= 1
             except:
                 pass
         children = self.session.findById(extension).Children
@@ -186,27 +193,30 @@ class SAP:
             if result:
                 break
             if children[i].Type == 'GuiCustomControl':
-                result = self.__scroll_through_tree(extension + '/cntl' + children[i].name)
+                result = self.__scroll_through_node(extension + '/cntl' + children[i].name)
             if children[i].Type == 'GuiSimpleContainer':
-                result = self.__scroll_through_tree(extension + '/sub' + children[i].name)
+                result = self.__scroll_through_node(extension + '/sub' + children[i].name)
             if children[i].Type == 'GuiScrollContainer':
-                result = self.__scroll_through_tree(extension + '/ssub' + children[i].name)
+                result = self.__scroll_through_node(extension + '/ssub' + children[i].name)
             if children[i].Type == 'GuiTableControl':
-                result = self.__scroll_through_tree(extension + '/tbl' + children[i].name)
+                result = self.__scroll_through_node(extension + '/tbl' + children[i].name)
             if children[i].Type == 'GuiTab':
-                result = self.__scroll_through_tree(extension + '/tabp' + children[i].name)
+                result = self.__scroll_through_node(extension + '/tabp' + children[i].name)
             if children[i].Type == 'GuiTabStrip':
-                result = self.__scroll_through_tree(extension + '/tabs' + children[i].name)
+                result = self.__scroll_through_node(extension + '/tabs' + children[i].name)
             if children[
                 i].Type in ("GuiShell GuiSplitterShell GuiContainerShell GuiDockShell GuiMenuBar GuiToolbar "
                             "GuiUserArea GuiTitlebar"):
-                result = self.__scroll_through_tree(extension + '/' + children[i].name)
+                result = self.__scroll_through_node(extension + '/' + children[i].name)
         return result
 
     def __scroll_through_table(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
         if 'tbl' in extension:
             try:
-                return self.session.findById(extension)
+                if self.__component_target_index == 0:
+                    return self.session.findById(extension)
+                else:
+                    self.__component_target_index -= 1
             except:
                 pass
         children = self.session.findById(extension).Children
@@ -836,17 +846,19 @@ class SAP:
         except:
             raise Exception("Get label failed.")
 
-    def get_table(self) -> Table:
+    def get_table(self, target_index: int = 0) -> Table:
         """
         Get the SAP Table object from the current SAP Table Window
+        :param target_index: Target index, determines how many occurrences precede the desired component
         :return: A SAP Table object, that can be used to extract data from Table components in SAP
         """
         try:
             self.window = self.__active_window()
+            self.__component_target_index = target_index
             table_obj = self.__scroll_through_table(f'wnd[{self.window}]/usr')
             if not table_obj:
                 raise Exception()
-            table = Table(table_obj, self.session)
+            table = Table(table_obj, self.session, target_index)
             return table
         except:
             raise Exception("Get table failed.")
@@ -868,13 +880,15 @@ class SAP:
         except:
             raise Exception("Get Tree failed.")
 
-    def get_grid(self) -> Grid:
+    def get_grid(self, target_index: int = 0) -> Grid:
         """
         Get the SAP Grid object from the current SAP Grid Window
+        :param target_index: Target index, determines how many occurrences precede the desired component
         :return: A SAP Grid object, that can be used to extract data from Grid tables in SAP
         """
         try:
             self.window = self.__active_window()
+            self.__component_target_index = target_index
             grid_obj = self.__scroll_through_grid(f'wnd[{self.window}]')
 
             if not grid_obj:
@@ -885,13 +899,15 @@ class SAP:
         except:
             raise Exception("Get grid failed.")
 
-    def get_node(self) -> Node:
+    def get_node(self, target_index: int = 0) -> Node:
         """
         Get the SAP Node object from the current SAP Node Window
+        :param target_index: Target index, determines how many occurrences precede the desired component
         :return: A SAP Node object, that can be used to extract data from Node components in SAP
         """
         try:
             self.window = self.__active_window()
+            self.__component_target_index = target_index
             node_obj = self.__scroll_through_node(f'wnd[{self.window}]')
 
             if not node_obj:

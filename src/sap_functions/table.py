@@ -1,9 +1,14 @@
 import re
+import copy
+import win32com.client
+from typing import Union
 
 
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/ce1d9e64355d49568e5def5271aea2db.html?locale=en-US
 class Table:
-    def __init__(self, table, session):
+    def __init__(self, table, session, target_index: int):
+        self.__component_target_index = target_index
+        self.__target_index = target_index
         self.table_obj = table
         self.session = session
         self.window = self.__active_window()
@@ -14,10 +19,17 @@ class Table:
         for match in matches:
             return int(match)
 
-    def __scroll_through_table(self, extension):
+    def __return_table(self):
+        self.__component_target_index = copy.copy(self.__target_index)
+        return self.__scroll_through_table(f'wnd[{self.window}]/usr')
+
+    def __scroll_through_table(self, extension: str) -> Union[bool, win32com.client.CDispatch]:
         if 'tbl' in extension:
             try:
-                return self.session.findById(extension)
+                if self.__component_target_index == 0:
+                    return self.session.findById(extension)
+                else:
+                    self.__component_target_index -= 1
             except:
                 pass
         children = self.session.findById(extension).Children
@@ -149,8 +161,8 @@ class Table:
         :return: A dictionary with 'header' and 'content' items
         """
         try:
-            self.__scroll_through_table(f'wnd[{self.window}]/usr').VerticalScrollbar.Position = 0
-            obj_now = self.__scroll_through_table(f'wnd[{self.window}]/usr')
+            self.__return_table().VerticalScrollbar.Position = 0
+            obj_now = self.__return_table()
             added_rows = []
 
             header = []
@@ -159,13 +171,18 @@ class Table:
             columns = obj_now.columns.count
             visible_rows = obj_now.visibleRowCount
             rows = obj_now.rowCount / visible_rows
+
+            iteration_plus = 0
+            if obj_now.rowCount > visible_rows:
+                iteration_plus = 1
+
             absolute_row = 0
 
             for c in range(columns):
                 col_name = obj_now.columns.elementAt(c).title
                 header.append(col_name)
 
-            for i in range(int(rows)):
+            for i in range(int(rows) + iteration_plus):
                 for visible_row in range(visible_rows):
                     active_row = []
                     for c in range(columns):
@@ -180,8 +197,8 @@ class Table:
                         added_rows.append(absolute_row)
                         content.append(active_row)
 
-                self.session.findById(f"wnd[{self.window}]").sendVKey(82)
-                obj_now = self.__scroll_through_table(f'wnd[{self.window}]/usr')
+                obj_now.VerticalScrollbar.Position = (visible_row + 1) * i
+                obj_now = self.__return_table()
             return {'header': header, 'content': content}
 
         except:
