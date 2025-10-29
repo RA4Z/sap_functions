@@ -302,7 +302,7 @@ def generic_conditionals(sap, index: int, children: win32com.client.CDispatch, o
                     field = field[initial_position:final_position] + "-VALU_PUSH"
                     for j in range(index, len(children)):
                         Obj = children[j]
-                        if field in Obj.name:
+                        if field in Obj.name or 'V_BTN_RANGE' in Obj.name:
                             Obj.press()
                             return True
                 except:
