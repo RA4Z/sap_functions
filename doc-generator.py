@@ -14,7 +14,7 @@ def generate_md_doc_for_codebase(module_name: str, output_file="README.md"):
         try:
             submodule = importlib.import_module(submodule_name)
         except Exception as e:
-            print(f"⚠️ Skipping {submodule_name}: {e}")
+            print(f"Skipping {submodule_name}: {e}")
             continue
 
         docs.append(f"\n## Module `{submodule_name}`\n")
@@ -43,7 +43,7 @@ def generate_md_doc_for_codebase(module_name: str, output_file="README.md"):
                 for _, method in methods:
                     class_docs.append(_format_function_doc(method))
                 class_docs.append("")
-
+        
         if class_docs:
             docs.extend(class_docs)
 
@@ -53,7 +53,7 @@ def generate_md_doc_for_codebase(module_name: str, output_file="README.md"):
             if func.__module__.startswith(module_name):
                 func_docs.append(_format_function_doc(func))
 
-        if func_docs:
+        if func_docs and len(class_docs)==0:
             docs.append("### Top-level Functions\n")
             docs.extend(func_docs)
             docs.append("")

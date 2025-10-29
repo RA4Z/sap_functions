@@ -18,20 +18,6 @@
 - `select_column(self, column_id: str) -> None`: Select a specific column
 - `select_layout(self, layout: str) -> None`: This function will select the desired Grid Layout when a SAP select Layout Pop up is open
 
-### Top-level Functions
-
-- `active_window(sap) -> int`: 
-- `count_and_create_sap_screens(connection: CDispatch, window: int)`: 
-- `generic_conditionals(sap, index: int, children: CDispatch, objective: str) -> bool`: 
-- `get_sap_connection() -> CDispatch`: 
-- `scroll_through_fields(sap, extension: str, objective: str) -> bool`: 
-- `scroll_through_grid(sap, extension: str) -> Union`: 
-- `scroll_through_node(sap, extension: str) -> Union`: 
-- `scroll_through_table(sap, extension: str) -> Union`: 
-- `scroll_through_tabs_by_id(sap, area: CDispatch, extension: str, selected_tab: int) -> CDispatch`: 
-- `scroll_through_tabs_by_name(sap, area: CDispatch, extension: str, tab_name: str) -> CDispatch`: 
-- `scroll_through_tree(sap, extension: str) -> Union`: 
-
 
 ## Module `sap_functions.label`
 
@@ -140,20 +126,6 @@
 - `__init__(self, tree_obj: CDispatch)`: Initialize self.  See help(type(self)) for accurate signature.
 - `get_tree_content(self, skip_error: bool = False) -> dict`: Store all the content from a SAP Tree, the data will be stored and returned in a dictionary with 'header' and
 
-### Top-level Functions
-
-- `active_window(sap) -> int`: 
-- `count_and_create_sap_screens(connection: CDispatch, window: int)`: 
-- `generic_conditionals(sap, index: int, children: CDispatch, objective: str) -> bool`: 
-- `get_sap_connection() -> CDispatch`: 
-- `scroll_through_fields(sap, extension: str, objective: str) -> bool`: 
-- `scroll_through_grid(sap, extension: str) -> Union`: 
-- `scroll_through_node(sap, extension: str) -> Union`: 
-- `scroll_through_table(sap, extension: str) -> Union`: 
-- `scroll_through_tabs_by_id(sap, area: CDispatch, extension: str, selected_tab: int) -> CDispatch`: 
-- `scroll_through_tabs_by_name(sap, area: CDispatch, extension: str, tab_name: str) -> CDispatch`: 
-- `scroll_through_tree(sap, extension: str) -> Union`: 
-
 
 ## Module `sap_functions.table`
 
@@ -170,20 +142,6 @@
 - `select_entire_row(self, absolute_row: int, skip_error: bool = False) -> None`: Select the entire row from a SAP Table, it uses the absolute table row. The desired cell needs to be
 - `unselect_entire_row(self, absolute_row: int, skip_error: bool = False) -> None`: Unselect the entire row from a SAP Table, it uses the absolute table row. The desired cell needs to be
 - `write_cell_value(self, row: int, column: int, desired_text: str, skip_error: bool = False) -> None`: Write any value in a SAP Table cell, using the relative visible table row. The desired cell needs to be
-
-### Top-level Functions
-
-- `active_window(sap) -> int`: 
-- `count_and_create_sap_screens(connection: CDispatch, window: int)`: 
-- `generic_conditionals(sap, index: int, children: CDispatch, objective: str) -> bool`: 
-- `get_sap_connection() -> CDispatch`: 
-- `scroll_through_fields(sap, extension: str, objective: str) -> bool`: 
-- `scroll_through_grid(sap, extension: str) -> Union`: 
-- `scroll_through_node(sap, extension: str) -> Union`: 
-- `scroll_through_table(sap, extension: str) -> Union`: 
-- `scroll_through_tabs_by_id(sap, area: CDispatch, extension: str, selected_tab: int) -> CDispatch`: 
-- `scroll_through_tabs_by_name(sap, area: CDispatch, extension: str, tab_name: str) -> CDispatch`: 
-- `scroll_through_tree(sap, extension: str) -> Union`: 
 
 
 ## Module `sap_functions.tree`
