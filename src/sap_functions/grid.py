@@ -1,4 +1,5 @@
 from .utils import *
+from typing import Union
 
 
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/4af24c3281fb4d6a809e53238562d3b2.html?locale=en-US
@@ -99,6 +100,41 @@ class Grid:
             return self.grid_obj.getCellValue(index, column_id)
         except:
             raise Exception("Get cell value failed.")
+
+    def get_grid_columns(self, *column_id: str) -> Union[dict, list]:
+        """
+        Return each column content
+        :param column_id: Grid list of columns "Field Name" found in the respective column Technical Information tab
+        :return: A dictionary/list with the desired content, when more than one column is desired, a dictionary with 'header' and 'content' items will be returned
+        """
+        try:
+            rows = self.count_rows()
+            if len(column_id) > 1:
+                header = [self.grid_obj.getCellValue(i, c) for c in column_id for i in range(-1, 0)]
+                data = [[self.grid_obj.getCellValue(i, c) for c in column_id] for i in range(0, rows)]
+                return {'header': header, 'content': data}
+            else:
+                data = [self.grid_obj.getCellValue(i, column_id[0]) for i in range(0, rows)]
+                return data
+
+        except:
+            raise Exception("Get Grid Columns Failed.")
+
+    def get_grid_row(self, row: int) -> list:
+        """
+        Get a grid row content
+        :param row: The desired grid row
+        :return: A list with the row content
+        """
+        try:
+            grid_column = self.grid_obj.ColumnOrder
+            cols = self.grid_obj.ColumnCount
+
+            data = [self.grid_obj.getCellValue(row, grid_column(c)) for c in range(cols)]
+            return data
+
+        except:
+            raise Exception("Get Grid Row Failed.")
 
     def get_grid_content(self) -> dict:
         """
