@@ -11,7 +11,7 @@ class Table:
         self.session = session
         self.window = active_window(self)
 
-    def __return_table(self):
+    def _return_table(self):
         self._component_target_index = copy.copy(self._target_index)
         return scroll_through_table(self, f'wnd[{self.window}]/usr')
 
@@ -121,8 +121,8 @@ class Table:
         :return: A dictionary with 'header' and 'content' items
         """
         try:
-            self.__return_table().VerticalScrollbar.Position = 0
-            obj_now = self.__return_table()
+            self._return_table().VerticalScrollbar.Position = 0
+            obj_now = self._return_table()
             added_rows = []
 
             header = []
@@ -158,7 +158,7 @@ class Table:
                         content.append(active_row)
 
                 obj_now.VerticalScrollbar.Position = (visible_row + 1) * i
-                obj_now = self.__return_table()
+                obj_now = self._return_table()
             return {'header': header, 'content': content}
 
         except:

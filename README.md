@@ -11,7 +11,9 @@
 - `count_rows(self) -> int`: This function will count all the rows in the current Grid
 - `get_cell_value(self, index: int, column_id: str) -> str`: Get the value of a specific Grid cell
 - `get_column_id(self, column_name: str) -> str`: This function will return the column id based on its column name
+- `get_grid_columns(self, *column_id: str) -> Union`: Return each column content
 - `get_grid_content(self) -> dict`: Store all the content from a SAP Grid, the data will be stored and returned in a dictionary with 'header' and
+- `get_grid_row(self, row: int) -> list`: Get a grid row content
 - `press_button(self, field_name: str, skip_error: bool = False) -> None`: This function will press any button in the SAP Grid component
 - `press_nested_button(self, *nested_fields: str, skip_error: bool = False) -> None`: This function needs to receive several strings that have the texts that appear written in the button destination
 - `select_all_content(self) -> None`: Select all the table, using the SAP native function to select all items
@@ -51,7 +53,9 @@
 - `count_rows(self) -> int`: This function will count all the rows in the current Grid
 - `get_cell_value(self, index: int, column_id: str) -> str`: Get the value of a specific Grid cell
 - `get_column_id(self, column_name: str) -> str`: This function will return the column id based on its column name
+- `get_grid_columns(self, *column_id: str) -> Union`: Return each column content
 - `get_grid_content(self) -> dict`: Store all the content from a SAP Grid, the data will be stored and returned in a dictionary with 'header' and
+- `get_grid_row(self, row: int) -> list`: Get a grid row content
 - `press_button(self, field_name: str, skip_error: bool = False) -> None`: This function will press any button in the SAP Grid component
 - `press_nested_button(self, *nested_fields: str, skip_error: bool = False) -> None`: This function needs to receive several strings that have the texts that appear written in the button destination
 - `select_all_content(self) -> None`: Select all the table, using the SAP native function to select all items
@@ -109,8 +113,8 @@
 ### Class `Table`
 
 **Methods:**
-- `__return_table(self)`: 
 - `__init__(self, table, session, target_index: int)`: Initialize self.  See help(type(self)) for accurate signature.
+- `_return_table(self)`: 
 - `click_cell(self, row: int, column: int, skip_error: bool = False) -> None`: Focus in a cell and double-click in it, using the relative visible table row. The desired cell needs to be
 - `count_visible_rows(self, skip_error: bool = False) -> int`: Count all the visible rows from a SAP Table
 - `flag_cell(self, row: int, column: int, desired_operator: bool, skip_error: bool = False) -> None`: Flags a checkbox in a SAP Table cell, using the relative visible table row. The desired cell needs to be
@@ -124,6 +128,7 @@
 
 **Methods:**
 - `__init__(self, tree_obj: CDispatch)`: Initialize self.  See help(type(self)) for accurate signature.
+- `get_tree_columns(self, *column_text: str) -> Union`: Return each column content
 - `get_tree_content(self, skip_error: bool = False) -> dict`: Store all the content from a SAP Tree, the data will be stored and returned in a dictionary with 'header' and
 
 
@@ -132,8 +137,8 @@
 ### Class `Table`
 
 **Methods:**
-- `__return_table(self)`: 
 - `__init__(self, table, session, target_index: int)`: Initialize self.  See help(type(self)) for accurate signature.
+- `_return_table(self)`: 
 - `click_cell(self, row: int, column: int, skip_error: bool = False) -> None`: Focus in a cell and double-click in it, using the relative visible table row. The desired cell needs to be
 - `count_visible_rows(self, skip_error: bool = False) -> int`: Count all the visible rows from a SAP Table
 - `flag_cell(self, row: int, column: int, desired_operator: bool, skip_error: bool = False) -> None`: Flags a checkbox in a SAP Table cell, using the relative visible table row. The desired cell needs to be
@@ -150,6 +155,7 @@
 
 **Methods:**
 - `__init__(self, tree_obj: CDispatch)`: Initialize self.  See help(type(self)) for accurate signature.
+- `get_tree_columns(self, *column_text: str) -> Union`: Return each column content
 - `get_tree_content(self, skip_error: bool = False) -> dict`: Store all the content from a SAP Tree, the data will be stored and returned in a dictionary with 'header' and
 
 
