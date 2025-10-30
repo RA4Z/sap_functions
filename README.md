@@ -1,6 +1,14 @@
 # `sap_functions`
 
 
+## Module `sap_functions.base_sap_connection`
+
+### Class `BaseSapConnection`
+
+**Methods:**
+- `__init__(self, window: int = 0)`: Initialize self.  See help(type(self)) for accurate signature.
+
+
 ## Module `sap_functions.grid`
 
 ### Class `Grid`
@@ -44,6 +52,11 @@
 
 
 ## Module `sap_functions.sap`
+
+### Class `BaseSapConnection`
+
+**Methods:**
+- `__init__(self, window: int = 0)`: Initialize self.  See help(type(self)) for accurate signature.
 
 ### Class `Grid`
 

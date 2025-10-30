@@ -6,6 +6,7 @@ from .grid import Grid
 from .table import Table
 from .label import Label
 from .utils import *
+from .base_sap_connection import BaseSapConnection
 from typing import Union
 
 
@@ -13,9 +14,10 @@ from typing import Union
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/a2e9357389334dc89eecc1fb13999ee3.html
 
 # module SAP Functions, development started in 2024/03/01
-class SAP:
+class SAP(BaseSapConnection):
 
     def __init__(self, window: int = 0) -> None:
+        super().__init__(window)
         self._component_target_index = None
         self._desired_operator = None
         self._selected_tab_id = None
@@ -26,19 +28,6 @@ class SAP:
         self._field_name = None
         self._found_text = None
         self._selected_tab_name = ''
-
-        connection = get_sap_connection()
-
-        if connection.Children(0).info.user == '':
-            raise Exception(
-                "SAP user is logged out!\nYou need to log in to SAP to run this script! Please log in and try again.")
-
-        if connection.Children(0).info.systemName == 'EQ0':
-            print("You're with SAP Quality Assurance open, (SAP QA)\nMany things may not happen as desired!")
-
-        count_and_create_sap_screens(connection, window)
-        self.session = connection.Children(window)
-        self.window = active_window(self)
 
     def select_transaction(self, transaction: str) -> None:
         """
