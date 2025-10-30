@@ -6,13 +6,13 @@ import copy
 class Table:
     def __init__(self, table, session, target_index: int):
         self._component_target_index = target_index
-        self.__target_index = target_index
+        self._target_index = target_index
         self.table_obj = table
         self.session = session
         self.window = active_window(self)
 
     def __return_table(self):
-        self._component_target_index = copy.copy(self.__target_index)
+        self._component_target_index = copy.copy(self._target_index)
         return scroll_through_table(self, f'wnd[{self.window}]/usr')
 
     def get_cell_value(self, row: int, column: int, skip_error: bool = False) -> str:

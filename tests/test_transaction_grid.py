@@ -17,9 +17,19 @@ def test_transaction():
 def test_insert_data_transaction():
    sap.write_text_field(os.getenv("transaction_1_field_1_name"), os.getenv("transaction_1_field_1_value"))
 
+def test_getting_inserted_date():
+   assert sap.get_text_at_side(os.getenv("transaction_1_field_1_name"), 1) == os.getenv("transaction_1_field_1_value")
+
+def test_flag_field():
+   sap.flag_field(os.getenv("transaction_1_flag"), True)
+   sap.flag_field(os.getenv("transaction_1_flag"), False)
+
+def test_change_active_tab():
+   sap.change_active_tab(os.getenv("transaction_1_tab_2"))
+   sap.change_active_tab(os.getenv("transaction_1_tab_1"))
+
 def test_run_transaction():
    sap.run_actual_transaction()
-
 
 grid = None
 def test_get_grid():
@@ -57,4 +67,4 @@ def test_grid_select_actions():
    grid.select_all_content()
    grid.select_column(os.getenv("transaction_1_grid_column_id"))   
    grid.click_cell(0, os.getenv("transaction_1_grid_column_id"))
-   
+   ""

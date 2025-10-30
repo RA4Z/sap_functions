@@ -2,7 +2,7 @@ import win32com.client
 
 
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/2e44c4f890524686977e9729565f7824.html?locale=en-US
-class Label:
+class Label():
     def __init__(self, session: win32com.client.CDispatch, window: int):
         self.session = session
         self.wnd = window
