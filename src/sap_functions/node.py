@@ -1,5 +1,5 @@
 import win32com.client
-
+import warnings
 
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/8f08be87b0194d9882d0382eae798617.html?locale=en-US
 class Node:
@@ -41,9 +41,28 @@ class Node:
 
     def get_node_content(self) -> list:
         """
+        Deprecated: use `Node.get_content` instead.
+
         Get all Nodes names in a list format
         :return: A list of string with every Node text
         """
+        warnings.warn("Deprecated in 1.1 "
+                      "Node.get_node_content will be removed in 1.5 "
+                      "Use Node.get_content instead.", DeprecationWarning, stacklevel=2)
+        results = []
+        parent = self.node_obj.GetAllNodeKeys()
+        for item in parent:
+            text = self.node_obj.GetNodeTextByKey(item)
+            results.append(text)
+
+        return results
+    
+    def get_content(self) -> list:
+        """
+        Get all Nodes names in a list format
+        :return: A list of string with every Node text
+        """
+       
         results = []
         parent = self.node_obj.GetAllNodeKeys()
         for item in parent:

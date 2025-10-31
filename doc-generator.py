@@ -5,6 +5,7 @@ import pkgutil
 from pathlib import Path
 
 
+
 def generate_md_doc_for_codebase(module_name: str, output_file="README.md"):
     """Generate a single Markdown documentation file for all classes and functions in a package."""
     docs = [f"""
@@ -43,7 +44,9 @@ Write "COOIS" in the transaction field.
             if not cls.__module__.startswith(module_name):
                 continue
 
-            class_docs.append(f"### Class `{class_name}`\n")
+            class_header = f"### Class `{class_name}` \n"
+        
+            class_docs.append(class_header)
 
             attrs = [
                 a for a in vars(cls)
