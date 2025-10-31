@@ -7,7 +7,25 @@ from pathlib import Path
 
 def generate_md_doc_for_codebase(module_name: str, output_file="README.md"):
     """Generate a single Markdown documentation file for all classes and functions in a package."""
-    docs = [f"# `{module_name}`\n"]
+    docs = [f"""
+# sap_functions
+Library with utility classes and functions to facilitate the development of SAP automations in python.
+
+This module is built on top of SAP Scripting and aims to making the development of automated workflows easier and quicker.
+
+## Implementation example
+```python
+from sap_functions import SAP
+
+sap = SAP()
+sap.select_transaction("COOIS")
+```
+This script:
+
+Checks for existant SAP GUI instances.
+Connects to that instance.
+Write "COOIS" in the transaction field.
+# Classes overview"""]
     package = importlib.import_module(module_name)
 
     for _, submodule_name, _ in pkgutil.walk_packages(package.__path__, package.__name__ + "."):

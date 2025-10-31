@@ -9,7 +9,7 @@ import os
 def test_sap_start():
    SAP()
    SAP(1)
-      
+
 sap = SAP()
 def test_transaction():
    with pytest.raises(Exception):

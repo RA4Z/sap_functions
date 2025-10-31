@@ -1,5 +1,22 @@
-# `sap_functions`
 
+# sap_functions
+Library with utility classes and functions to facilitate the development of SAP automations in python.
+
+This module is built on top of SAP Scripting and aims to making the development of automated workflows easier and quicker.
+
+## Implementation example
+```python
+from sap_functions import SAP
+
+sap = SAP()
+sap.select_transaction("COOIS")
+```
+This script:
+
+Checks for existant SAP GUI instances.
+Connects to that instance.
+Write "COOIS" in the transaction field.
+# Classes overview
 
 ## Module `sap_functions.base_sap_connection`
 
@@ -34,7 +51,7 @@
 ### Class `Label`
 
 **Methods:**
-- `__init__(self, session: CDispatch, window: int)`: Initialize self.  See help(type(self)) for accurate signature.
+- `__init__(self, session: CDispatch, window: int = 0)`: Initialize self.  See help(type(self)) for accurate signature.
 - `get_all_screen_labels(self) -> list`: This function will return each label row in the SAP Screen
 - `get_label_content(self) -> dict`: Store all the content from a SAP Label, the data will be stored and returned in a dictionary with
 
@@ -78,7 +95,7 @@
 ### Class `Label`
 
 **Methods:**
-- `__init__(self, session: CDispatch, window: int)`: Initialize self.  See help(type(self)) for accurate signature.
+- `__init__(self, session: CDispatch, window: int = 0)`: Initialize self.  See help(type(self)) for accurate signature.
 - `get_all_screen_labels(self) -> list`: This function will return each label row in the SAP Screen
 - `get_label_content(self) -> dict`: Store all the content from a SAP Label, the data will be stored and returned in a dictionary with
 
@@ -126,7 +143,7 @@
 ### Class `Table`
 
 **Methods:**
-- `__init__(self, table, session, target_index: int)`: Initialize self.  See help(type(self)) for accurate signature.
+- `__init__(self, table_obj: CDispatch, session: CDispatch, target_index: int, window: int = 0)`: Initialize self.  See help(type(self)) for accurate signature.
 - `_return_table(self)`: 
 - `click_cell(self, row: int, column: int, skip_error: bool = False) -> None`: Focus in a cell and double-click in it, using the relative visible table row. The desired cell needs to be
 - `count_visible_rows(self, skip_error: bool = False) -> int`: Count all the visible rows from a SAP Table
@@ -150,7 +167,7 @@
 ### Class `Table`
 
 **Methods:**
-- `__init__(self, table, session, target_index: int)`: Initialize self.  See help(type(self)) for accurate signature.
+- `__init__(self, table_obj: CDispatch, session: CDispatch, target_index: int, window: int = 0)`: Initialize self.  See help(type(self)) for accurate signature.
 - `_return_table(self)`: 
 - `click_cell(self, row: int, column: int, skip_error: bool = False) -> None`: Focus in a cell and double-click in it, using the relative visible table row. The desired cell needs to be
 - `count_visible_rows(self, skip_error: bool = False) -> int`: Count all the visible rows from a SAP Table

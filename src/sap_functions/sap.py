@@ -17,7 +17,7 @@ from typing import Union
 class SAP(BaseSapConnection):
 
     def __init__(self, window: int = 0) -> None:
-        super().__init__(window)
+        BaseSapConnection.__init__(self, window)
         self._component_target_index = None
         self._desired_operator = None
         self._selected_tab_id = None

@@ -1,16 +1,17 @@
 from .utils import *
 import copy
+import win32com.client
 
 
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/ce1d9e64355d49568e5def5271aea2db.html?locale=en-US
 class Table:
-    def __init__(self, table, session, target_index: int):
+    def __init__(self, table_obj: win32com.client.CDispatch, session: win32com.client.CDispatch, target_index: int, window:int = 0):
         self._component_target_index = target_index
         self._target_index = target_index
-        self.table_obj = table
+        self.table_obj = table_obj
         self.session = session
-        self.window = active_window(self)
-
+        self.window = window
+        
     def _return_table(self):
         self._component_target_index = copy.copy(self._target_index)
         return scroll_through_table(self, f'wnd[{self.window}]/usr')

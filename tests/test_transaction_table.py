@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-sap = SAP()
+sap = SAP(1)
 
 def test_transaction():
    sap.select_transaction(os.getenv("transaction_2"))
