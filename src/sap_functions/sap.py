@@ -6,6 +6,7 @@ from .grid import Grid
 from .table import Table
 from .label import Label
 from .utils import *
+from .base_sap_connection import BaseSapConnection
 from typing import Union
 
 
@@ -13,32 +14,20 @@ from typing import Union
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/a2e9357389334dc89eecc1fb13999ee3.html
 
 # module SAP Functions, development started in 2024/03/01
-class SAP:
+class SAP(BaseSapConnection):
 
     def __init__(self, window: int = 0) -> None:
+        BaseSapConnection.__init__(self, window)
         self._component_target_index = None
-        self.__desired_operator = None
-        self.__selected_tab_id = None
-        self.__desired_text = None
-        self.__target_index = None
-        self.__target_tab = None
-        self.__side_index = None
-        self.__field_name = None
-        self.__found_text = None
-        self.__selected_tab_name = ''
-
-        connection = get_sap_connection()
-
-        if connection.Children(0).info.user == '':
-            raise Exception(
-                "SAP user is logged out!\nYou need to log in to SAP to run this script! Please log in and try again.")
-
-        if connection.Children(0).info.systemName == 'EQ0':
-            print("You're with SAP Quality Assurance open, (SAP QA)\nMany things may not happen as desired!")
-
-        count_and_create_sap_screens(connection, window)
-        self.session = connection.Children(window)
-        self.window = active_window(self)
+        self._desired_operator = None
+        self._selected_tab_id = None
+        self._desired_text = None
+        self._target_index = None
+        self._target_tab = None
+        self._side_index = None
+        self._field_name = None
+        self._found_text = None
+        self._selected_tab_name = ''
 
     def select_transaction(self, transaction: str) -> None:
         """
@@ -144,7 +133,7 @@ class SAP:
                 except:
                     pass
             else:
-                self.__target_tab = selected_tab
+                self._target_tab = selected_tab
                 scroll_through_fields(self, f"wnd[{self.window}]/usr", 'select_tab_by_name')
 
         except:
@@ -163,10 +152,10 @@ class SAP:
         """
         try:
             self.window = active_window(self)
-            self.__field_name = field_name
-            self.__desired_text = desired_text
-            self.__target_index = target_index
-            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
+            self._field_name = field_name
+            self._desired_text = desired_text
+            self._target_index = target_index
+            if selected_tab != self._selected_tab_id and selected_tab != self._selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not scroll_through_fields(self, f"wnd[{self.window}]/usr", 'write_text_field'):
                 raise Exception()
@@ -187,10 +176,10 @@ class SAP:
         """
         try:
             self.window = active_window(self)
-            self.__field_name = field_name
-            self.__desired_text = desired_text
-            self.__target_index = target_index
-            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
+            self._field_name = field_name
+            self._desired_text = desired_text
+            self._target_index = target_index
+            if selected_tab != self._selected_tab_id and selected_tab != self._selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not scroll_through_fields(self, f"wnd[{self.window}]/usr", 'write_text_field_until'):
                 raise Exception()
@@ -210,10 +199,10 @@ class SAP:
         """
         try:
             self.window = active_window(self)
-            self.__field_name = field_name
-            self.__desired_text = desired_text
-            self.__target_index = target_index
-            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
+            self._field_name = field_name
+            self._desired_text = desired_text
+            self._target_index = target_index
+            if selected_tab != self._selected_tab_id and selected_tab != self._selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not scroll_through_fields(self, f"wnd[{self.window}]/usr", 'choose_text_combo'):
                 raise Exception()
@@ -234,10 +223,10 @@ class SAP:
         """
         try:
             self.window = active_window(self)
-            self.__field_name = field_name
-            self.__desired_operator = desired_operator
-            self.__target_index = target_index
-            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
+            self._field_name = field_name
+            self._desired_operator = desired_operator
+            self._target_index = target_index
+            if selected_tab != self._selected_tab_id and selected_tab != self._selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not scroll_through_fields(self, f"wnd[{self.window}]/usr", 'flag_field'):
                 raise Exception()
@@ -258,11 +247,11 @@ class SAP:
         """
         try:
             self.window = active_window(self)
-            self.__field_name = field_name
-            self.__desired_operator = desired_operator
-            self.__target_index = target_index
-            self.__side_index = side_index
-            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
+            self._field_name = field_name
+            self._desired_operator = desired_operator
+            self._target_index = target_index
+            self._side_index = side_index
+            if selected_tab != self._selected_tab_id and selected_tab != self._selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not scroll_through_fields(self, f"wnd[{self.window}]/usr", 'flag_field_at_side'):
                 raise Exception()
@@ -280,9 +269,9 @@ class SAP:
         """
         try:
             self.window = active_window(self)
-            self.__field_name = field_name
-            self.__target_index = target_index
-            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
+            self._field_name = field_name
+            self._target_index = target_index
+            if selected_tab != self._selected_tab_id and selected_tab != self._selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not scroll_through_fields(self, f"wnd[{self.window}]/usr", 'option_field'):
                 raise Exception()
@@ -300,9 +289,9 @@ class SAP:
         """
         try:
             self.window = active_window(self)
-            self.__field_name = field_name
-            self.__target_index = target_index
-            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
+            self._field_name = field_name
+            self._target_index = target_index
+            if selected_tab != self._selected_tab_id and selected_tab != self._selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not scroll_through_fields(self, f"wnd[{self.window}]", 'press_button'):
                 raise Exception()
@@ -320,9 +309,9 @@ class SAP:
         """
         try:
             self.window = active_window(self)
-            self.__field_name = field_name
-            self.__target_index = target_index
-            if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
+            self._field_name = field_name
+            self._target_index = target_index
+            if selected_tab != self._selected_tab_id and selected_tab != self._selected_tab_name:
                 self.change_active_tab(selected_tab)
             if not scroll_through_fields(self, f"wnd[{self.window}]/usr", 'multiple_selection_field'):
                 raise Exception()
@@ -337,8 +326,8 @@ class SAP:
         :return: A boolean, True if the text was found and False if it was not found
         """
         self.window = active_window(self)
-        self.__field_name = field_name
-        if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
+        self._field_name = field_name
+        if selected_tab != self._selected_tab_id and selected_tab != self._selected_tab_name:
             self.change_active_tab(selected_tab)
         return scroll_through_fields(self, f"wnd[{self.window}]/usr", 'find_text_field')
 
@@ -353,13 +342,13 @@ class SAP:
         :return: A string with the text at the side of the searched text
         """
         self.window = active_window(self)
-        self.__field_name = field_name
-        self.__target_index = target_index
-        self.__side_index = side_index
-        if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
+        self._field_name = field_name
+        self._target_index = target_index
+        self._side_index = side_index
+        if selected_tab != self._selected_tab_id and selected_tab != self._selected_tab_name:
             self.change_active_tab(selected_tab)
         if scroll_through_fields(self, f"wnd[{self.window}]", 'get_text_at_side'):
-            return self.__found_text
+            return self._found_text
 
     def set_focus(self, field_name, side_index: int = 0, target_index: int = 0, selected_tab: Union[int, str] = 0):
         """
@@ -370,10 +359,10 @@ class SAP:
         :param selected_tab: Desired Tab, where this field can be found, the SAP default tab is 0
         """
         self.window = active_window(self)
-        self.__field_name = field_name
-        self.__target_index = target_index
-        self.__side_index = side_index
-        if selected_tab != self.__selected_tab_id and selected_tab != self.__selected_tab_name:
+        self._field_name = field_name
+        self._target_index = target_index
+        self._side_index = side_index
+        if selected_tab != self._selected_tab_id and selected_tab != self._selected_tab_name:
             self.change_active_tab(selected_tab)
         scroll_through_fields(self, f"wnd[{self.window}]", 'set_focus')
 

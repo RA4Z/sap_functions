@@ -1,18 +1,19 @@
 from .utils import *
 import copy
-
+import win32com.client
+import warnings
 
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/ce1d9e64355d49568e5def5271aea2db.html?locale=en-US
 class Table:
-    def __init__(self, table, session, target_index: int):
+    def __init__(self, table_obj: win32com.client.CDispatch, session: win32com.client.CDispatch, target_index: int, window:int = 0):
         self._component_target_index = target_index
-        self.__target_index = target_index
-        self.table_obj = table
+        self._target_index = target_index
+        self.table_obj = table_obj
         self.session = session
-        self.window = active_window(self)
-
-    def __return_table(self):
-        self._component_target_index = copy.copy(self.__target_index)
+        self.window = window
+        
+    def _return_table(self):
+        self._component_target_index = copy.copy(self._target_index)
         return scroll_through_table(self, f'wnd[{self.window}]/usr')
 
     def get_cell_value(self, row: int, column: int, skip_error: bool = False) -> str:
@@ -115,14 +116,20 @@ class Table:
 
     def get_table_content(self, skip_error: bool = False) -> dict:
         """
+        Deprecated: use `Table.get_content` instead.
+
         Store all the content from a SAP Table, the data will be stored and returned in a dictionary with 'header' and
         'content' items
         :param skip_error: Skip this function if occur any error
         :return: A dictionary with 'header' and 'content' items
         """
+        warnings.warn("Deprecated in 1.1 "
+                      "Table.get_table_content will be removed in 1.5 "
+                      "Use Table.get_content instead.", DeprecationWarning, stacklevel=2)
+        
         try:
-            self.__return_table().VerticalScrollbar.Position = 0
-            obj_now = self.__return_table()
+            self._return_table().VerticalScrollbar.Position = 0
+            obj_now = self._return_table()
             added_rows = []
 
             header = []
@@ -160,6 +167,61 @@ class Table:
                         added_rows.append(absolute_row)
                         content.append(active_row)
 
+                obj_now.VerticalScrollbar.Position = (visible_row + 1) * i
+                obj_now = self._return_table()
+            return {'header': header, 'content': content}
+
+        except:
+            if not skip_error:
+                raise Exception("Get table content failed.")
+
+    def get_content(self, skip_error: bool = False) -> dict:
+        """
+        Store all the content from a SAP Table, the data will be stored and returned in a dictionary with 'header' and
+        'content' items
+        :param skip_error: Skip this function if occur any error
+        :return: A dictionary with 'header' and 'content' items
+        """
+        
+        try:
+            self._return_table().VerticalScrollbar.Position = 0
+            obj_now = self._return_table()
+            added_rows = []
+
+            header = []
+            content = []
+
+            columns = obj_now.columns.count
+            visible_rows = obj_now.visibleRowCount
+            rows = obj_now.rowCount / visible_rows
+
+            iteration_plus = 0
+            if obj_now.rowCount > visible_rows:
+                iteration_plus = 1
+
+            absolute_row = 0
+
+            for c in range(columns):
+                col_name = obj_now.columns.elementAt(c).title
+                header.append(col_name)
+
+            for i in range(int(rows) + iteration_plus):
+                for visible_row in range(visible_rows):
+                    active_row = []
+                    for c in range(columns):
+                        try:
+                            active_row.append(obj_now.getCell(visible_row, c).text)
+                        except:
+                            active_row.append(None)
+
+                    absolute_row += 1
+
+                    if not all(value is None for value in active_row) and absolute_row not in added_rows:
+                        added_rows.append(absolute_row)
+                        content.append(active_row)
+
+                obj_now.VerticalScrollbar.Position = (visible_row + 1) * i
+                obj_now = self._return_table()
             return {'header': header, 'content': content}
 
         except:

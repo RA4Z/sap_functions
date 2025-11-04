@@ -36,8 +36,8 @@ def scroll_through_tabs_by_id(sap, area: win32com.client.CDispatch, extension: s
             return scroll_through_tabs_by_id(sap, sap.session.findById(extension), extension, selected_tab)
         if child.Type == "GuiTab":
             extension = extension + "/tabp" + str(children[selected_tab].name)
-            sap._SAP__selected_tab_id = selected_tab
-            sap._SAP__selected_tab_name = children[selected_tab].text
+            sap._selected_tab_id = selected_tab
+            sap._selected_tab_name = children[selected_tab].text
             return scroll_through_tabs_by_id(sap, sap.session.findById(extension), extension, selected_tab)
         if child.Type == "GuiSimpleContainer":
             extension = extension + "/sub" + child.name
@@ -60,8 +60,8 @@ def scroll_through_tabs_by_name(sap, area: win32com.client.CDispatch, extension:
             temp_extension = extension + "/tabp" + str(child.name)
             if str(sap.session.findById(temp_extension).text).strip() == tab_name:
                 extension = extension + "/tabp" + str(child.name)
-                sap._SAP__selected_tab_id = i
-                sap._SAP__selected_tab_name = child.text
+                sap._selected_tab_id = i
+                sap._selected_tab_name = child.text
                 return scroll_through_tabs_by_name(sap, sap.session.findById(extension), extension, tab_name)
         if child.Type == "GuiSimpleContainer":
             extension = extension + "/sub" + child.name
@@ -215,7 +215,7 @@ def scroll_through_table(sap, extension: str) -> Union[bool, win32com.client.CDi
 
 
 def scroll_through_fields(sap, extension: str, objective: str) -> bool:
-    selected_tab = sap._SAP__selected_tab_id
+    selected_tab = sap._selected_tab_id
     children = sap.session.findById(extension).Children
     result = False
     for i in range(len(children)):
@@ -253,48 +253,48 @@ def scroll_through_fields(sap, extension: str, objective: str) -> bool:
 
 def generic_conditionals(sap, index: int, children: win32com.client.CDispatch, objective: str) -> bool:
     if objective == 'select_tab_by_name':
-        if str(children(index).Text).strip() == sap._SAP__target_tab:
+        if str(children(index).Text).strip() == sap._target_tab:
             try:
-                sap._SAP__selected_tab_id = index
-                sap._SAP__selected_tab_name = sap._SAP__field_name
+                sap._selected_tab_id = index
+                sap._selected_tab_name = sap._field_name
                 children(index).Select()
                 return True
             except:
                 return False
 
     if objective == 'write_text_field':
-        if children(index).Text == sap._SAP__field_name:
-            if sap._SAP__target_index == 0:
+        if children(index).Text == sap._field_name:
+            if sap._target_index == 0:
                 try:
-                    children(index + 1).Text = sap._SAP__desired_text
+                    children(index + 1).Text = sap._desired_text
                     return True
                 except:
                     return False
             else:
-                sap._SAP__target_index -= 1
+                sap._target_index -= 1
 
     if objective == 'write_text_field_until':
-        if children(index).Text == sap._SAP__field_name:
-            if sap._SAP__target_index == 0:
+        if children(index).Text == sap._field_name:
+            if sap._target_index == 0:
                 try:
-                    children(index + 3).Text = sap._SAP__desired_text
+                    children(index + 3).Text = sap._desired_text
                     return True
                 except:
                     return False
             else:
-                sap._SAP__target_index -= 1
+                sap._target_index -= 1
 
     if objective == 'find_text_field':
         child = children(index)
-        if (sap._SAP__field_name in child.Text or
-                ('HTMLControl' in child.Text and sap._SAP__field_name in child.BrowserHandle.document.all(
+        if (sap._field_name in child.Text or
+                ('HTMLControl' in child.Text and sap._field_name in child.BrowserHandle.document.all(
                     0).innerText)):
             return True
         return False
 
     if objective == 'multiple_selection_field':
-        if children(index).Text == sap._SAP__field_name:
-            if sap._SAP__target_index == 0:
+        if children(index).Text == sap._field_name:
+            if sap._target_index == 0:
                 try:
                     field = children(index).name
                     initial_position = field.find("%") + 1
@@ -309,44 +309,44 @@ def generic_conditionals(sap, index: int, children: win32com.client.CDispatch, o
                     return False
                 return False
             else:
-                sap._SAP__target_index -= 1
+                sap._target_index -= 1
 
     if objective == 'flag_field':
-        if children(index).Text == sap._SAP__field_name:
-            if sap._SAP__target_index == 0:
+        if children(index).Text == sap._field_name:
+            if sap._target_index == 0:
                 try:
-                    children(index).Selected = sap._SAP__desired_operator
+                    children(index).Selected = sap._desired_operator
                     return True
                 except:
                     return False
             else:
-                sap._SAP__target_index -= 1
+                sap._target_index -= 1
 
     if objective == 'flag_field_at_side':
-        if children(index).Text == sap._SAP__field_name:
-            if sap._SAP__target_index == 0:
+        if children(index).Text == sap._field_name:
+            if sap._target_index == 0:
                 try:
-                    children(index + sap._SAP__side_index).Selected = sap._SAP__desired_operator
+                    children(index + sap._side_index).Selected = sap._desired_operator
                     return True
                 except:
                     return False
             else:
-                sap._SAP__target_index -= 1
+                sap._target_index -= 1
 
     if objective == 'option_field':
-        if children(index).Text == sap._SAP__field_name:
-            if sap._SAP__target_index == 0:
+        if children(index).Text == sap._field_name:
+            if sap._target_index == 0:
                 try:
                     children(index).Select()
                     return True
                 except:
                     return False
             else:
-                sap._SAP__target_index -= 1
+                sap._target_index -= 1
 
     if objective == 'press_button':
         try:
-            if sap._SAP__field_name in children(index).Text or sap._SAP__field_name in children(index).Tooltip:
+            if sap._field_name in children(index).Text or sap._field_name in children(index).Tooltip:
                 children(index).press()
                 return True
             if sap.session.info.transaction == 'CJ20N' or sap.session.info.transaction == 'MD04':
@@ -355,7 +355,7 @@ def generic_conditionals(sap, index: int, children: win32com.client.CDispatch, o
                         if children(index).GetButtonTooltip(i) != '':
                             id_button = children(index).GetButtonId(i)
                             tooltip_button = children(index).GetButtonTooltip(i)
-                            if sap._SAP__field_name in tooltip_button:
+                            if sap._field_name in tooltip_button:
                                 children(index).pressButton(id_button)
                                 return True
                 except:
@@ -365,40 +365,40 @@ def generic_conditionals(sap, index: int, children: win32com.client.CDispatch, o
         return False
 
     if objective == 'choose_text_combo':
-        if children(index).Text == sap._SAP__field_name:
-            if sap._SAP__target_index == 0:
+        if children(index).Text == sap._field_name:
+            if sap._target_index == 0:
                 try:
                     entries = children(index + 1).Entries
                     for cont in range(len(entries)):
                         entry = entries.Item(cont)
-                        if sap._SAP__desired_text == str(entry.Value):
+                        if sap._desired_text == str(entry.Value):
                             children(index + 1).key = entry.key
                             return True
                 except:
                     return False
                 return False
             else:
-                sap._SAP__target_index -= 1
+                sap._target_index -= 1
 
     if objective == 'set_focus':
-        if children(index).Text == sap._SAP__field_name:
-            if sap._SAP__target_index == 0:
+        if children(index).Text == sap._field_name:
+            if sap._target_index == 0:
                 try:
-                    children(index + sap._SAP__side_index).setFocus()
+                    children(index + sap._side_index).setFocus()
                     return True
                 except:
                     return False
             else:
-                sap._SAP__target_index -= 1
+                sap._target_index -= 1
 
     if objective == 'get_text_at_side':
-        if children(index).Text == sap._SAP__field_name:
-            if sap._SAP__target_index == 0:
+        if children(index).Text == sap._field_name:
+            if sap._target_index == 0:
                 try:
-                    sap._SAP__found_text = children(index + sap._SAP__side_index).Text
+                    sap._found_text = children(index + sap._side_index).Text
                     return True
                 except:
                     return False
             else:
-                sap._SAP__target_index -= 1
+                sap._target_index -= 1
     return False
