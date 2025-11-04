@@ -75,49 +75,6 @@ Write "COOIS" in the transaction field.
 
 ## Module `sap_functions.sap`
 
-### Class `BaseSapConnection` 
-
-**Methods:**
-- `__init__(self, window: int = 0)`: Initialize self.  See help(type(self)) for accurate signature.
-
-### Class `Grid` 
-
-**Methods:**
-- `__init__(self, grid_obj: CDispatch, session: CDispatch)`: Initialize self.  See help(type(self)) for accurate signature.
-- `click_cell(self, index: int, column_id: str) -> None`: This function will select and double-click in a SAP Grid cell
-- `count_rows(self) -> int`: This function will count all the rows in the current Grid
-- `get_cell_value(self, index: int, column_id: str) -> str`: Get the value of a specific Grid cell
-- `get_column_id(self, column_name: str) -> str`: This function will return the column id based on its column name
-- `get_columns(self, *column_id: str) -> Union`: Return each column content
-- `get_content(self) -> dict`: Store all the content from a SAP Grid, the data will be stored and returned in a dictionary with 'header' and
-- `get_grid_columns(self, *column_id: str) -> Union`: Deprecated: use `Grid.get_columns` instead.
-- `get_grid_content(self) -> dict`: Deprecated: use `Grid.get_content` instead.
-- `get_grid_row(self, row: int) -> list`: Deprecated: use `Grid.get_row` instead.
-- `get_row(self, row: int) -> list`: Get a grid row content
-- `press_button(self, field_name: str, skip_error: bool = False) -> None`: This function will press any button in the SAP Grid component
-- `press_nested_button(self, *nested_fields: str, skip_error: bool = False) -> None`: This function needs to receive several strings that have the texts that appear written in the button destination
-- `select_all_content(self) -> None`: Select all the table, using the SAP native function to select all items
-- `select_column(self, column_id: str) -> None`: Select a specific column
-- `select_layout(self, layout: str) -> None`: This function will select the desired Grid Layout when a SAP select Layout Pop up is open
-
-### Class `Label` 
-
-**Methods:**
-- `__init__(self, session: CDispatch, window: int = 0)`: Initialize self.  See help(type(self)) for accurate signature.
-- `get_all_screen_labels(self) -> list`: This function will return each label row in the SAP Screen
-- `get_content(self) -> dict`: Store all the content from a SAP Label, the data will be stored and returned in a dictionary with
-- `get_label_content(self) -> dict`: Deprecated: use `Label.get_content` instead.
-
-### Class `Node` 
-
-**Methods:**
-- `__init__(self, node_obj: CDispatch)`: Initialize self.  See help(type(self)) for accurate signature.
-- `click_selected_node(self)`: Double-click the Node selected previously
-- `expand_selected_node(self)`: Expand the Node selected previously
-- `get_content(self) -> list`: Get all Nodes names in a list format
-- `get_node_content(self) -> list`: Deprecated: use `Node.get_content` instead.
-- `select_node(self, node_text: str, target_index: int = 0, skip_error: bool = False)`: Select a specific Node based on the text inside of it
-
 ### Class `SAP` 
 
 **Methods:**
@@ -149,30 +106,6 @@ Write "COOIS" in the transaction field.
 - `set_focus(self, field_name, side_index: int = 0, target_index: int = 0, selected_tab: Union = 0)`: This function will select/focus in the field with the text received as a parameter
 - `write_text_field(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: Union = 0, skip_error: bool = False) -> None`: This function will write the desired text in the respective input at the side of the field name
 - `write_text_field_until(self, field_name: str, desired_text: str, target_index: int = 0, selected_tab: Union = 0, skip_error: bool = False) -> None`: This function will write the desired text in the "until" field in the respective input at the side of the
-
-### Class `Table` 
-
-**Methods:**
-- `__init__(self, table_obj: CDispatch, session: CDispatch, target_index: int, window: int = 0)`: Initialize self.  See help(type(self)) for accurate signature.
-- `_return_table(self)`: 
-- `click_cell(self, row: int, column: int, skip_error: bool = False) -> None`: Focus in a cell and double-click in it, using the relative visible table row. The desired cell needs to be
-- `count_visible_rows(self, skip_error: bool = False) -> int`: Count all the visible rows from a SAP Table
-- `flag_cell(self, row: int, column: int, desired_operator: bool, skip_error: bool = False) -> None`: Flags a checkbox in a SAP Table cell, using the relative visible table row. The desired cell needs to be
-- `get_cell_value(self, row: int, column: int, skip_error: bool = False) -> str`: Return the content of a SAP Table cell, using the relative visible table row. The desired cell needs to be
-- `get_content(self, skip_error: bool = False) -> dict`: Store all the content from a SAP Table, the data will be stored and returned in a dictionary with 'header' and
-- `get_table_content(self, skip_error: bool = False) -> dict`: Deprecated: use `Table.get_content` instead.
-- `select_entire_row(self, absolute_row: int, skip_error: bool = False) -> None`: Select the entire row from a SAP Table, it uses the absolute table row. The desired cell needs to be
-- `unselect_entire_row(self, absolute_row: int, skip_error: bool = False) -> None`: Unselect the entire row from a SAP Table, it uses the absolute table row. The desired cell needs to be
-- `write_cell_value(self, row: int, column: int, desired_text: str, skip_error: bool = False) -> None`: Write any value in a SAP Table cell, using the relative visible table row. The desired cell needs to be
-
-### Class `Tree` 
-
-**Methods:**
-- `__init__(self, tree_obj: CDispatch)`: Initialize self.  See help(type(self)) for accurate signature.
-- `get_columns(self, *column_text: str) -> Union`: Return each column content
-- `get_content(self, skip_error: bool = False) -> dict`: Store all the content from a SAP Tree, the data will be stored and returned in a dictionary with 'header' and
-- `get_tree_columns(self, *column_text: str) -> Union`: Deprecated: use `Tree.get_columns` instead.
-- `get_tree_content(self, skip_error: bool = False) -> dict`: Deprecated: use `Tree.get_content` instead.
 
 
 ## Module `sap_functions.table`

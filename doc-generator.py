@@ -39,7 +39,9 @@ Write "COOIS" in the transaction field.
         docs.append(f"\n## Module `{submodule_name}`\n")
 
         classes = inspect.getmembers(submodule, inspect.isclass)
+        classes = [class_ for class_ in classes if class_[1].__module__ == submodule_name]
         class_docs = []
+
         for class_name, cls in classes:
             if not cls.__module__.startswith(module_name):
                 continue
