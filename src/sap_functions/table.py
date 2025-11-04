@@ -133,16 +133,19 @@ class Table:
             rows = obj_now.rowCount / visible_rows
 
             iteration_plus = 0
-            if obj_now.rowCount > visible_rows:
+            if obj_now.rowCount > visible_rows and self.session.info.transaction != 'MD04':
                 iteration_plus = 1
 
             absolute_row = 0
+            visible_row = 0
 
             for c in range(columns):
                 col_name = obj_now.columns.elementAt(c).title
                 header.append(col_name)
 
-            for i in range(int(rows) + iteration_plus):
+            for i in range(0, int(rows) + iteration_plus):
+                obj_now.VerticalScrollbar.Position = (visible_row + 1) * i
+                obj_now = self.__return_table()
                 for visible_row in range(visible_rows):
                     active_row = []
                     for c in range(columns):
@@ -157,8 +160,6 @@ class Table:
                         added_rows.append(absolute_row)
                         content.append(active_row)
 
-                obj_now.VerticalScrollbar.Position = (visible_row + 1) * i
-                obj_now = self.__return_table()
             return {'header': header, 'content': content}
 
         except:
