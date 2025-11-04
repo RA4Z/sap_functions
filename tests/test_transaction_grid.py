@@ -49,9 +49,17 @@ def test_grid_get_content():
    assert type(content.get("header")).__name__ == "list"
    assert type(content.get("content")).__name__ == "list"
 
-def test_grid_count_rows():
+def test_grid_rows():
    rows = grid.count_rows()
    assert type(rows).__name__ == "int"
+   row = grid.get_row(0)
+   assert type(row).__name__ == "list"
+   
+def test_grid_columns():
+   column_id = grid.get_column_id(os.getenv("transaction_1_grid_column_name"))
+   assert type(column_id).__name__ == "str"
+   columns = grid.get_columns(column_id)
+   assert type(columns).__name__ == "list"   
 
 def test_grid_get_cell_value():
    cell_value = grid.get_cell_value(0, os.getenv("transaction_1_grid_column_id"))
@@ -67,4 +75,3 @@ def test_grid_select_actions():
    grid.select_all_content()
    grid.select_column(os.getenv("transaction_1_grid_column_id"))   
    grid.click_cell(0, os.getenv("transaction_1_grid_column_id"))
-   ""

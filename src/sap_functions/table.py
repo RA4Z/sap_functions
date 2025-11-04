@@ -171,8 +171,7 @@ class Table:
                 obj_now = self._return_table()
             return {'header': header, 'content': content}
 
-        except Exception as e:
-            print(e)
+        except:
             if not skip_error:
                 raise Exception("Get table content failed.")
 

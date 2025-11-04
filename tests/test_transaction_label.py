@@ -25,3 +25,7 @@ def test_get_label():
    exec(os.getenv("transaction_5_before_label"))
    label = sap.get_label()
    label.get_all_screen_labels()
+
+def test_get_content():
+   label = sap.get_label()
+   label.get_content()
