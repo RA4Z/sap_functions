@@ -4,12 +4,6 @@ import time
 import re
 
 
-def count_and_create_sap_screens(connection: win32com.client.CDispatch, window: int):
-    while len(connection.sessions) < window + 1:
-        connection.Children(0).createSession()
-        time.sleep(3)
-
-
 def get_sap_connection() -> win32com.client.CDispatch:
     try:
         sapguiauto = win32com.client.GetObject('SAPGUI')
@@ -18,6 +12,12 @@ def get_sap_connection() -> win32com.client.CDispatch:
     except:
         raise Exception(
             "SAP is not open!\nSAP must be open to run this script! Please, open it and try to run again.")
+
+
+def count_and_create_sap_screens(connection: win32com.client.CDispatch, window: int):
+    while len(connection.sessions) < window + 1:
+        connection.Children(0).createSession()
+        time.sleep(3)
 
 
 def active_window(sap) -> int:

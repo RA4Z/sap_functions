@@ -32,7 +32,7 @@ def test_table_count_visible_rows():
 def test_table_cell_value():
    cell_value = table.get_cell_value(0, 1)
    assert type(cell_value).__name__ == "str"
-
+   
 def test_table_select_actions():
    table.select_entire_row(0)
    table.unselect_entire_row(0)
@@ -43,3 +43,7 @@ def test_table_get_content():
    content = table.get_content()
    assert type(content.get("header")).__name__ == "list"
    assert type(content.get("content")).__name__ == "list"
+
+def test_table_internal_methods():
+   table_obj = table._return_table()
+   assert type(table_obj).__name__ == "CDispatch"
