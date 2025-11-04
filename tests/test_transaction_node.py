@@ -35,6 +35,6 @@ def test_select_node():
 def test_click_selected_node():
    node.click_selected_node()
 
-def test_get_node_content():
-   content = node.get_node_content()
+def test_node_get_content():
+   content = node.get_content()
    assert type(content).__name__ == "list"

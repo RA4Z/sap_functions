@@ -40,6 +40,6 @@ def test_table_select_actions():
    exec(os.getenv("transaction_2_after_cell_click"))
 
 def test_table_get_content():
-   content = table.get_table_content()
+   content = table.get_content()
    assert type(content.get("header")).__name__ == "list"
    assert type(content.get("content")).__name__ == "list"

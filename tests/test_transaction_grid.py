@@ -45,7 +45,7 @@ def test_grid_layout():
    grid.select_layout(os.getenv("transaction_1_grid_layout"))
 
 def test_grid_get_content():
-   content = grid.get_grid_content()
+   content = grid.get_content()
    assert type(content.get("header")).__name__ == "list"
    assert type(content.get("content")).__name__ == "list"
 
