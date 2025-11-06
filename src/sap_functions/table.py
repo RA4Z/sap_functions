@@ -230,3 +230,67 @@ class Table:
         except:
             if not skip_error:
                 raise Exception("Get table content failed.")
+
+    def get_columns(self, *column_text: str, skip_error: bool = False) -> Union[Dict[str, List[str]], list]:
+        """
+        Return each column content
+        :param column_id: Table list of columns
+        :param skip_error: Skip this function if occur any error
+        :return: A dictionary/list with the desired content, when more than one column is desired, a dictionary with 'header' and 'content' items will be returned
+        """
+        try:
+            self._return_table().VerticalScrollbar.Position = 0
+            obj_now = self._return_table()
+            added_rows = []
+
+            header = []
+            content = []
+
+            columns = obj_now.columns.count
+            visible_rows = obj_now.visibleRowCount
+            rows = obj_now.rowCount / visible_rows
+
+            iteration_plus = 0
+            if obj_now.rowCount > visible_rows:
+                iteration_plus = 1
+
+            absolute_row = 0
+
+            for c in range(columns):
+                col_name = obj_now.columns.elementAt(c).title
+                if col_name in column_text:
+                    header.append(col_name)
+
+            for i in range(int(rows) + iteration_plus):
+                for visible_row in range(visible_rows):
+                    active_row = []
+                    for c in range(columns):
+                        if obj_now.columns.elementAt(c).title in header:
+                            if len(header) > 1:
+                                    try:
+                                        active_row.append(obj_now.getCell(visible_row, c).text)
+                                    except:
+                                        active_row.append(None)
+                            else:
+                                try:
+                                    content.append(obj_now.getCell(visible_row, c).text)
+                                except:
+                                    content.append(None)
+
+                    absolute_row += 1
+
+                    if not all(value is None for value in active_row) and absolute_row not in added_rows:
+                        added_rows.append(absolute_row)
+                        if len(header) > 1:
+                            content.append(active_row)
+
+                obj_now.VerticalScrollbar.Position = (visible_row + 1) * i
+                obj_now = self._return_table()
+
+            if len(header) > 1:
+                return {'header': list(header), 'content': list(content)}
+            else:
+                return list(content)
+        except:
+            if not skip_error:
+                raise Exception("Get table content failed.")
