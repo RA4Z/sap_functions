@@ -20,3 +20,6 @@ def test_transaction():
 
 def test_sap_footer_message():
    assert sap.get_footer_message() == os.getenv("not_existant_transaction_footer_message")
+
+def test_selecte_main_screen():
+   sap.select_main_screen()

@@ -17,6 +17,8 @@ def test_transaction():
 def test_insert_data_transaction():
    sap.write_text_field(os.getenv("transaction_1_field_1_name"), os.getenv("transaction_1_field_1_value"))
    assert sap.get_text_at_side(os.getenv("transaction_1_field_1_name"), 1) == os.getenv("transaction_1_field_1_value")
+   sap.write_text_field_until(os.getenv("transaction_1_field_1_name"), "value")
+   assert sap.get_text_at_side(os.getenv("transaction_1_field_1_name"), 3) == "value"
 
 def test_clean_all_fields():
    sap.clean_all_fields()
