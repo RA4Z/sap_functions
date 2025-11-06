@@ -16,6 +16,17 @@ def test_transaction():
 
 def test_insert_data_transaction():
    sap.write_text_field(os.getenv("transaction_1_field_1_name"), os.getenv("transaction_1_field_1_value"))
+   assert sap.get_text_at_side(os.getenv("transaction_1_field_1_name"), 1) == os.getenv("transaction_1_field_1_value")
+
+def test_clean_all_fields():
+   sap.clean_all_fields()
+   assert sap.get_text_at_side(os.getenv("transaction_1_field_1_name"), 1) == ""
+   # rewriting so the rest of the flow can keep on going
+   sap.write_text_field(os.getenv("transaction_1_field_1_name"), os.getenv("transaction_1_field_1_value"))
+
+def test_find_text_field():
+   assert sap.find_text_field(os.getenv("transaction_1_field_1_name")) == True
+   assert sap.find_text_field(os.getenv("not_existant_field_name")) == False
 
 def test_getting_inserted_date():
    assert sap.get_text_at_side(os.getenv("transaction_1_field_1_name"), 1) == os.getenv("transaction_1_field_1_value")
