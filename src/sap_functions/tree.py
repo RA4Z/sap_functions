@@ -1,5 +1,5 @@
+from typing import Dict, List, Union
 import win32com.client
-from typing import Union
 import warnings
 
 
@@ -8,7 +8,7 @@ class Tree:
     def __init__(self, tree_obj: win32com.client.CDispatch):
         self.tree_obj = tree_obj
 
-    def get_tree_columns(self, *column_text: str) -> Union[dict, list]:
+    def get_tree_columns(self, *column_text: str) -> Union[Dict[str, List[str]], list]:
         """
         Deprecated: use `Tree.get_columns` instead.
 
@@ -54,7 +54,7 @@ class Tree:
         except:
             raise Exception("Get Tree Columns Failed.")
 
-    def get_columns(self, *column_text: str) -> Union[dict, list]:
+    def get_columns(self, *column_text: str) -> Union[Dict[str, List[str]], list]:
         """
         Return each column content
         :param column_text: Tree list of columns "Field Text"
@@ -94,7 +94,7 @@ class Tree:
         except:
             raise Exception("Get Tree Columns Failed.")
 
-    def get_tree_content(self, skip_error: bool = False) -> dict:
+    def get_tree_content(self, skip_error: bool = False) -> Dict[str, List[str]]:
         """
         Deprecated: use `Tree.get_content` instead.
 
@@ -133,7 +133,7 @@ class Tree:
             if not skip_error:
                 raise Exception("Get tree content failed.")
 
-    def get_content(self, skip_error: bool = False) -> dict:
+    def get_content(self, skip_error: bool = False) -> Dict[str, List[str]]:
         """
         Store all the content from a SAP Tree, the data will be stored and returned in a dictionary with 'header' and
         'content' items

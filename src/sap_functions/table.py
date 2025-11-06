@@ -1,5 +1,6 @@
 from .utils import *
 import copy
+from typing import Dict, List
 import win32com.client
 import warnings
 
@@ -116,7 +117,7 @@ class Table:
             if not skip_error:
                 raise Exception("Click Cell Failed.")
 
-    def get_table_content(self, skip_error: bool = False) -> dict:
+    def get_table_content(self, skip_error: bool = False) -> Dict[str, List[str]]:
         """
         Deprecated: use `Table.get_content` instead.
 
@@ -177,7 +178,7 @@ class Table:
             if not skip_error:
                 raise Exception("Get table content failed.")
 
-    def get_content(self, skip_error: bool = False) -> dict:
+    def get_content(self, skip_error: bool = False) -> Dict[str, List[str]]:
         """
         Store all the content from a SAP Table, the data will be stored and returned in a dictionary with 'header' and
         'content' items
@@ -224,7 +225,7 @@ class Table:
 
                 obj_now.VerticalScrollbar.Position = (visible_row + 1) * i
                 obj_now = self._return_table()
-            return {'header': header, 'content': content}
+            return {'header': list(header), 'content': list(content)}
 
         except:
             if not skip_error:
