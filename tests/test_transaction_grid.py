@@ -16,6 +16,19 @@ def test_transaction():
 
 def test_insert_data_transaction():
    sap.write_text_field(os.getenv("transaction_1_field_1_name"), os.getenv("transaction_1_field_1_value"))
+   assert sap.get_text_at_side(os.getenv("transaction_1_field_1_name"), 1) == os.getenv("transaction_1_field_1_value")
+   sap.write_text_field_until(os.getenv("transaction_1_field_1_name"), "value")
+   assert sap.get_text_at_side(os.getenv("transaction_1_field_1_name"), 3) == "value"
+
+def test_clean_all_fields():
+   sap.clean_all_fields()
+   assert sap.get_text_at_side(os.getenv("transaction_1_field_1_name"), 1) == ""
+   # rewriting so the rest of the flow can keep on going
+   sap.write_text_field(os.getenv("transaction_1_field_1_name"), os.getenv("transaction_1_field_1_value"))
+
+def test_find_text_field():
+   assert sap.find_text_field(os.getenv("transaction_1_field_1_name")) == True
+   assert sap.find_text_field(os.getenv("not_existant_field_name")) == False
 
 def test_getting_inserted_date():
    assert sap.get_text_at_side(os.getenv("transaction_1_field_1_name"), 1) == os.getenv("transaction_1_field_1_value")
@@ -45,13 +58,21 @@ def test_grid_layout():
    grid.select_layout(os.getenv("transaction_1_grid_layout"))
 
 def test_grid_get_content():
-   content = grid.get_grid_content()
+   content = grid.get_content()
    assert type(content.get("header")).__name__ == "list"
    assert type(content.get("content")).__name__ == "list"
 
-def test_grid_count_rows():
+def test_grid_rows():
    rows = grid.count_rows()
    assert type(rows).__name__ == "int"
+   row = grid.get_row(0)
+   assert type(row).__name__ == "list"
+   
+def test_grid_columns():
+   column_id = grid.get_column_id(os.getenv("transaction_1_grid_column_name"))
+   assert type(column_id).__name__ == "str"
+   columns = grid.get_columns(column_id)
+   assert type(columns).__name__ == "list"   
 
 def test_grid_get_cell_value():
    cell_value = grid.get_cell_value(0, os.getenv("transaction_1_grid_column_id"))
@@ -67,4 +88,3 @@ def test_grid_select_actions():
    grid.select_all_content()
    grid.select_column(os.getenv("transaction_1_grid_column_id"))   
    grid.click_cell(0, os.getenv("transaction_1_grid_column_id"))
-   ""

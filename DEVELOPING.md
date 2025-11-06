@@ -14,7 +14,7 @@ pytest
 pytest --cov=src --cov-report=term
 ```
 
-**To check codebase functions test coverage**
+**To check codebase functions test coverage and show missing ones**
 ```
-pytest --func_cov=src tests/
+pytest --func_cov=src tests/ --func_cov_report=term-missing
 ```
