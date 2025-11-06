@@ -280,6 +280,28 @@ class SAP(BaseSapConnection):
         except:
             if not skip_error: raise Exception("Option field failed.")
 
+    def option_field_at_side(self, field_name: str, side_index: int = 0, target_index: int = 0,
+                             selected_tab: Union[int, str] = 0, skip_error: bool = False) -> None:
+        """
+        This function will select an option field
+        :param field_name: The text with the option field you want to select
+        :param side_index: Number of components at the side of the respective field_name, with positive numbers the code will go through components at right, if negative it will go through components at left
+        :param target_index: Target index, determines how many occurrences precede the desired field
+        :param selected_tab: Desired Tab, where this field can be found, the SAP default tab is 0
+        :param skip_error: Skip this function if occur any error
+        """
+        try:
+            self.window = active_window(self)
+            self._field_name = field_name
+            self._target_index = target_index
+            self._side_index = side_index
+            if selected_tab != self._selected_tab_id and selected_tab != self._selected_tab_name:
+                self.change_active_tab(selected_tab)
+            if not scroll_through_fields(self, f"wnd[{self.window}]/usr", 'option_field_at_side'):
+                raise Exception()
+        except:
+            if not skip_error: raise Exception("Option field failed.")
+
     def press_button(self, field_name: str, target_index: int = 0, selected_tab: Union[int, str] = 0,
                      skip_error: bool = False) -> None:
         """

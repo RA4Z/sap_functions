@@ -344,6 +344,17 @@ def generic_conditionals(sap, index: int, children: win32com.client.CDispatch, o
             else:
                 sap._target_index -= 1
 
+    if objective == 'option_field_at_side':
+        if children(index).Text == sap._field_name:
+            if sap._target_index == 0:
+                try:
+                    children(index + sap._side_index).Select()
+                    return True
+                except:
+                    return False
+            else:
+                sap._target_index -= 1
+
     if objective == 'press_button':
         try:
             if sap._field_name in children(index).Text or sap._field_name in children(index).Tooltip:
