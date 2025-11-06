@@ -28,6 +28,8 @@ class SAP(BaseSapConnection):
         self._field_name = None
         self._found_text = None
         self._selected_tab_name = ''
+        if self.session.info.transaction == 'S000':
+            self.select_main_screen()
 
     def select_transaction(self, transaction: str) -> None:
         """
