@@ -2,6 +2,7 @@ from .utils import *
 from typing import Union
 import warnings
 
+
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/4af24c3281fb4d6a809e53238562d3b2.html?locale=en-US
 class Grid:
     def __init__(self, grid_obj: win32com.client.CDispatch, session: win32com.client.CDispatch):
@@ -100,7 +101,7 @@ class Grid:
             return self.grid_obj.getCellValue(index, column_id)
         except:
             raise Exception("Get cell value failed.")
-    
+
     def get_grid_columns(self, *column_id: str) -> Union[dict, list]:
         """
         Deprecated: use `Grid.get_columns` instead.
@@ -164,7 +165,7 @@ class Grid:
 
         except:
             raise Exception("Get Grid Row Failed.")
-        
+
     def get_row(self, row: int) -> list:
         """
         Get a grid row content

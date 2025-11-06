@@ -3,15 +3,17 @@ import copy
 import win32com.client
 import warnings
 
+
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/ce1d9e64355d49568e5def5271aea2db.html?locale=en-US
 class Table:
-    def __init__(self, table_obj: win32com.client.CDispatch, session: win32com.client.CDispatch, target_index: int, window:int = 0):
+    def __init__(self, table_obj: win32com.client.CDispatch, session: win32com.client.CDispatch, target_index: int,
+                 window: int = 0):
         self._component_target_index = target_index
         self._target_index = target_index
         self.table_obj = table_obj
         self.session = session
         self.window = window
-        
+
     def _return_table(self):
         self._component_target_index = copy.copy(self._target_index)
         return scroll_through_table(self, f'wnd[{self.window}]/usr')
@@ -126,7 +128,7 @@ class Table:
         warnings.warn("Deprecated in 1.1 "
                       "Table.get_table_content will be removed in 1.5 "
                       "Use Table.get_content instead.", DeprecationWarning, stacklevel=2)
-        
+
         try:
             self._return_table().VerticalScrollbar.Position = 0
             obj_now = self._return_table()
@@ -152,7 +154,7 @@ class Table:
 
             for i in range(0, int(rows) + iteration_plus):
                 obj_now.VerticalScrollbar.Position = (visible_row + 1) * i
-                obj_now = self.__return_table()
+                obj_now = self._return_table()
                 for visible_row in range(visible_rows):
                     active_row = []
                     for c in range(columns):
@@ -182,7 +184,7 @@ class Table:
         :param skip_error: Skip this function if occur any error
         :return: A dictionary with 'header' and 'content' items
         """
-        
+
         try:
             self._return_table().VerticalScrollbar.Position = 0
             obj_now = self._return_table()
