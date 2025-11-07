@@ -266,7 +266,10 @@ def generic_conditionals(sap, index: int, children: win32com.client.CDispatch, o
         if children(index).Text == sap._field_name:
             if sap._target_index == 0:
                 try:
-                    children(index + 1).Text = sap._desired_text
+                    cont_ind = index + 1
+                    while children(cont_ind).type not in ['GuiCTextField', 'GuiTextField']:
+                        cont_ind += 1
+                    children(cont_ind).Text = sap._desired_text
                     return True
                 except:
                     return False
@@ -277,7 +280,10 @@ def generic_conditionals(sap, index: int, children: win32com.client.CDispatch, o
         if children(index).Text == sap._field_name:
             if sap._target_index == 0:
                 try:
-                    children(index + 3).Text = sap._desired_text
+                    cont_ind = index + 3
+                    while children(cont_ind).type not in ['GuiCTextField', 'GuiTextField']:
+                        cont_ind += 1
+                    children(cont_ind).Text = sap._desired_text
                     return True
                 except:
                     return False
