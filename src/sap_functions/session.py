@@ -35,9 +35,11 @@ class SAPGuiInfo:
     systemSessionId: str
 
 
-class SAPGuiWindow:
+class SAPGuiFrameWindow:
     name: str
     text: str
+    type: str
+    def close(self) -> None: """The function attempts to close the window. Trying to close the last main window of a session will not succeed immediately; the dialog ‘Do you really want to log off?’ will be displayed first"""
 
 
 class SAPGuiScrollbar:
@@ -74,7 +76,7 @@ class GuiComponent:
 
 class SAPGuiSession:
     info: SAPGuiInfo
-    activeWindow: SAPGuiWindow
+    activeWindow: SAPGuiFrameWindow
     isActive: bool
 
     def CreateSession(self) -> None: ...
