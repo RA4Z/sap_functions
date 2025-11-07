@@ -1,6 +1,23 @@
 from typing import Iterator
 
 
+class SAPGridView:
+    toolbarButtonCount: any
+    columnOrder: list
+    columnCount: int
+    rowCount: int
+    visibleRowCount: int
+    def setCurrentCell(self, row: int, column: str) -> None: """If row and column identify a valid cell, this cell becomes the current cell. Otherwise, an exception is raised."""
+    def doubleClickCurrentCell(self) -> None: """This function emulates a mouse double click on the current cell"""
+    def clearSelection(self) -> None: """Calling clearSelection removes all row, column and cell selections"""
+    def clickCurrentCell(self) -> None: """This function emulates a mouse click on the current cell"""
+    def contextMenu(self) -> None: """Calling contextMenu emulates the context menu request"""
+    def selectAll(self) -> None: """This function selects the whole grid content (i.e. all rows and all columns)."""
+    def selectContextMenuItem(self, item: str) -> None: """Select an item from the control’s context menu"""
+    def selectColumn(self, column: str) -> None: """This function adds the specified column to the collection of the selected columns"""
+    def getCellValue(self, row: int, column: str) -> str: """Returns the value of the cell as a string"""
+
+
 class SAPGuiInfo:
     user: str
     transaction: str
@@ -25,7 +42,10 @@ class SAPGuiWindow:
 
 class SAPGuiScrollbar:
     position: int
+    minimum: int
     maximum: int
+    pageSize: int
+    range: int
 
 
 class GuiComponent:
@@ -37,6 +57,7 @@ class GuiComponent:
     count: int
     charLeft: str
     children: "GuiComponent"
+    horizontalScrollbar: SAPGuiScrollbar
     verticalScrollbar: SAPGuiScrollbar
 
     def clickCurrentCell(self): ...
@@ -55,10 +76,6 @@ class SAPGuiSession:
     info: SAPGuiInfo
     activeWindow: SAPGuiWindow
     isActive: bool
-    findById: object
-    CreateSession: object
-    EndTransaction: object
-    startTransaction: object
 
     def CreateSession(self) -> None: ...
     def EndTransaction(self) -> None: ...

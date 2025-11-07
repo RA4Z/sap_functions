@@ -1,14 +1,14 @@
 from .utils import *
-from .session import SAPGuiSession
+from .session import SAPGuiSession, SAPGridView
 import warnings
 from typing import Dict, List, Union
 
 
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/4af24c3281fb4d6a809e53238562d3b2.html?locale=en-US
 class Grid:
-    def __init__(self, grid_obj: win32com.client.CDispatch, session: SAPGuiSession):
+    def __init__(self, grid_obj: SAPGridView, session: SAPGuiSession):
         self._component_target_index = 0
-        self.grid_obj = grid_obj
+        self.grid_obj: SAPGridView = grid_obj
         self.session = session
         self.window = active_window(self)
         self.commands_spec = [
@@ -60,10 +60,10 @@ class Grid:
         :return: A integer with the total number of rows in the current Grid
         """
         try:
-            rows = self.grid_obj.RowCount
+            rows = self.grid_obj.rowCount
             if rows > 0:
-                visible_row = self.grid_obj.VisibleRowCount
-                visible_row0 = self.grid_obj.VisibleRowCount
+                visible_row = self.grid_obj.visibleRowCount
+                visible_row0 = self.grid_obj.visibleRowCount
                 n_page_down = rows // visible_row0
                 if n_page_down > 1:
                     for j in range(1, n_page_down + 1):
@@ -83,13 +83,13 @@ class Grid:
         :param column_name: The target column's name
         :return: A string with the respective column id
         """
-        grid_column = self.grid_obj.ColumnOrder
-        cols = self.grid_obj.ColumnCount
+        grid_column = self.grid_obj.columnOrder
+        cols = self.grid_obj.columnCount
 
         for c in range(cols):
-            item = self.grid_obj.getCellValue(-1, grid_column(c))
+            item = self.grid_obj.getCellValue(-1, grid_column[c])
             if column_name == item:
-                return grid_column(c)
+                return grid_column[c]
 
     def get_cell_value(self, index: int, column_id: str) -> str:
         """
@@ -158,10 +158,10 @@ class Grid:
                       "Grid.get_grid_row will be removed in 1.5 "
                       "Use Grid.get_row instead.", DeprecationWarning, stacklevel=2)
         try:
-            grid_column = self.grid_obj.ColumnOrder
-            cols = self.grid_obj.ColumnCount
+            grid_column = self.grid_obj.columnOrder
+            cols = self.grid_obj.columnCount
 
-            data = [self.grid_obj.getCellValue(row, grid_column(c)) for c in range(cols)]
+            data = [self.grid_obj.getCellValue(row, grid_column[c]) for c in range(cols)]
             return data
 
         except:
@@ -174,10 +174,10 @@ class Grid:
         :return: A list with the row content
         """
         try:
-            grid_column = self.grid_obj.ColumnOrder
-            cols = self.grid_obj.ColumnCount
+            grid_column = self.grid_obj.columnOrder
+            cols = self.grid_obj.columnCount
 
-            data = [self.grid_obj.getCellValue(row, grid_column(c)) for c in range(cols)]
+            data = [self.grid_obj.getCellValue(row, grid_column[c]) for c in range(cols)]
             return data
 
         except:
@@ -195,11 +195,11 @@ class Grid:
                       "Grid.get_grid_content will be removed in 1.5 "
                       "Use Grid.get_content instead.", DeprecationWarning, stacklevel=2)
         try:
-            grid_column = self.grid_obj.ColumnOrder
+            grid_column = self.grid_obj.columnOrder
             rows = self.count_rows()
-            cols = self.grid_obj.ColumnCount
-            header = [self.grid_obj.getCellValue(i, grid_column(c)) for c in range(cols) for i in range(-1, 0)]
-            data = [[self.grid_obj.getCellValue(i, grid_column(c)) for c in range(cols)] for i in range(0, rows)]
+            cols = self.grid_obj.columnCount
+            header = [self.grid_obj.getCellValue(i, grid_column[c]) for c in range(cols) for i in range(-1, 0)]
+            data = [[self.grid_obj.getCellValue(i, grid_column[c]) for c in range(cols)] for i in range(0, rows)]
             return {'header': header, 'content': data}
 
         except:
@@ -212,11 +212,11 @@ class Grid:
         :return: A dictionary with 'header' and 'content' items
         """
         try:
-            grid_column = self.grid_obj.ColumnOrder
+            grid_column = self.grid_obj.columnOrder
             rows = self.count_rows()
-            cols = self.grid_obj.ColumnCount
-            header = [self.grid_obj.getCellValue(i, grid_column(c)) for c in range(cols) for i in range(-1, 0)]
-            data = [[self.grid_obj.getCellValue(i, grid_column(c)) for c in range(cols)] for i in range(0, rows)]
+            cols = self.grid_obj.columnCount
+            header = [self.grid_obj.getCellValue(i, grid_column[c]) for c in range(cols) for i in range(-1, 0)]
+            data = [[self.grid_obj.getCellValue(i, grid_column[c]) for c in range(cols)] for i in range(0, rows)]
             return {'header': header, 'content': data}
 
         except:
@@ -248,7 +248,7 @@ class Grid:
         :param column_id: Grid column "Field Name" found in the respective column Technical Information tab
         """
         try:
-            self.grid_obj.SetCurrentCell(index, column_id)
+            self.grid_obj.setCurrentCell(index, column_id)
             self.grid_obj.doubleClickCurrentCell()
         except:
             raise Exception("Click Cell Failed.")
@@ -266,7 +266,7 @@ class Grid:
                 get_text_func = getattr(self.grid_obj, command_info['get_text_method_name'])
                 press_func = getattr(self.grid_obj, command_info['press_method_name'])
 
-                for i in range(self.grid_obj.ToolbarButtonCount):
+                for i in range(self.grid_obj.toolbarButtonCount):
                     button_id = get_id_func(i)
                     button_tooltip = get_tooltip_func(i)
                     button_text = get_text_func(i)

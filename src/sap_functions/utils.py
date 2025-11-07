@@ -1,5 +1,5 @@
 from typing import Union
-from .session import GuiComponent
+from .session import GuiComponent, SAPGridView
 import win32com.client
 import time
 import re
@@ -74,7 +74,7 @@ def scroll_through_tabs_by_name(sap, area: GuiComponent, extension: str,
     return area
 
 
-def scroll_through_grid(sap, extension: str) -> Union[bool, win32com.client.CDispatch]:
+def scroll_through_grid(sap, extension: str) -> Union[bool, SAPGridView]:
     if sap.session.findById(extension).Type == 'GuiShell':
         try:
             var = sap.session.findById(extension).RowCount
