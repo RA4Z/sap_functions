@@ -55,7 +55,7 @@ class SAP(BaseSapConnection):
         try:
             if not self.session.info.transaction == "SESSION_MANAGER":
                 self.session.startTransaction('SESSION_MANAGER')
-                if self.session.ActiveWindow.name == "wnd[1]":
+                if self.session.activeWindow.name == "wnd[1]":
                     self.session.findById("wnd[1]/tbar[0]/btn[0]").press()
         except:
             if not skip_error: raise Exception("Select main screen failed.")
@@ -75,9 +75,9 @@ class SAP(BaseSapConnection):
                 area = scroll_through_tabs_by_name(self, self.session.findById(f"wnd[{self.window}]/usr"),
                                                    f"wnd[{self.window}]/usr", selected_tab)
 
-            children = area.Children
+            children = area.children
             for child in children:
-                if child.Type == "GuiCTextField":
+                if child.type == "GuiCTextField":
                     try:
                         child.Text = ""
                     except:
@@ -114,7 +114,7 @@ class SAP(BaseSapConnection):
                 self.session.findById("wnd[1]/usr/txtV-LOW").Text = variant_name
                 self.session.findById("wnd[1]/usr/txtENAME-LOW").Text = ""
                 self.session.findById("wnd[1]/tbar[0]/btn[8]").press()
-                if self.session.activewindow.name == 'wnd[1]':
+                if self.session.activeWindow.name == 'wnd[1]':
                     raise Exception()
         except:
             if not skip_error: raise Exception("Insert variant failed.")
@@ -432,11 +432,11 @@ class SAP(BaseSapConnection):
         """
         id_path = 'wnd[0]/mbar'
         for active_path in nested_path:
-            children = self.session.findById(id_path).Children
-            for i in range(children.Count):
-                Obj = children(i)
-                if active_path in Obj.Text:
-                    menu_address = Obj.ID.split("/")[-1]
+            children = self.session.findById(id_path).children
+            for i in range(children.count):
+                Obj = children[i]
+                if active_path in Obj.text:
+                    menu_address = Obj.id.split("/")[-1]
                     id_path += f'/{menu_address}'
                     break
         self.session.findById(id_path).Select()
@@ -559,6 +559,6 @@ class SAP(BaseSapConnection):
         :return: A String with the footer message
         """
         try:
-            return self.session.findById("wnd[0]/sbar").Text
+            return self.session.findById("wnd[0]/sbar").text
         except:
             raise Exception("Get footer message failed.")

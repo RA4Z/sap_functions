@@ -1,4 +1,5 @@
 from typing import Union
+from .session import GuiComponent
 import win32com.client
 import time
 import re
@@ -22,51 +23,51 @@ def count_and_create_sap_screens(connection: win32com.client.CDispatch, window: 
 
 def active_window(sap) -> int:
     regex = re.compile('[0-9]')
-    matches = regex.findall(sap.session.ActiveWindow.name)
+    matches = regex.findall(sap.session.activeWindow.name)
     for match in matches:
         return int(match)
 
 
-def scroll_through_tabs_by_id(sap, area: win32com.client.CDispatch, extension: str,
-                              selected_tab: int) -> win32com.client.CDispatch:
-    children = area.Children
+def scroll_through_tabs_by_id(sap, area: GuiComponent, extension: str,
+                              selected_tab: int) -> GuiComponent:
+    children = area.children
     for child in children:
-        if child.Type == "GuiTabStrip":
+        if child.type == "GuiTabStrip":
             extension = extension + "/tabs" + child.name
             return scroll_through_tabs_by_id(sap, sap.session.findById(extension), extension, selected_tab)
-        if child.Type == "GuiTab":
+        if child.type == "GuiTab":
             extension = extension + "/tabp" + str(children[selected_tab].name)
             sap._selected_tab_id = selected_tab
             sap._selected_tab_name = children[selected_tab].text
             return scroll_through_tabs_by_id(sap, sap.session.findById(extension), extension, selected_tab)
-        if child.Type == "GuiSimpleContainer":
+        if child.type == "GuiSimpleContainer":
             extension = extension + "/sub" + child.name
             return scroll_through_tabs_by_id(sap, sap.session.findById(extension), extension, selected_tab)
-        if child.Type == "GuiScrollContainer" and 'tabp' in extension:
+        if child.type == "GuiScrollContainer" and 'tabp' in extension:
             extension = extension + "/ssub" + child.name
             area = sap.session.findById(extension)
             return area
     return area
 
 
-def scroll_through_tabs_by_name(sap, area: win32com.client.CDispatch, extension: str,
-                                tab_name: str) -> win32com.client.CDispatch:
-    children = area.Children
+def scroll_through_tabs_by_name(sap, area: GuiComponent, extension: str,
+                                tab_name: str) -> GuiComponent:
+    children = area.children
     for i, child in enumerate(children):
-        if child.Type == "GuiTabStrip":
+        if child.type == "GuiTabStrip":
             extension = extension + "/tabs" + child.name
             return scroll_through_tabs_by_name(sap, sap.session.findById(extension), extension, tab_name)
-        if child.Type == "GuiTab":
+        if child.type == "GuiTab":
             temp_extension = extension + "/tabp" + str(child.name)
             if str(sap.session.findById(temp_extension).text).strip() == tab_name:
                 extension = extension + "/tabp" + str(child.name)
                 sap._selected_tab_id = i
                 sap._selected_tab_name = child.text
                 return scroll_through_tabs_by_name(sap, sap.session.findById(extension), extension, tab_name)
-        if child.Type == "GuiSimpleContainer":
+        if child.type == "GuiSimpleContainer":
             extension = extension + "/sub" + child.name
             return scroll_through_tabs_by_name(sap, sap.session.findById(extension), extension, tab_name)
-        if child.Type == "GuiScrollContainer" and 'tabp' in extension:
+        if child.type == "GuiScrollContainer" and 'tabp' in extension:
             extension = extension + "/ssub" + child.name
             area = sap.session.findById(extension)
             return area

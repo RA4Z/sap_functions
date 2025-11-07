@@ -1,11 +1,12 @@
 from .utils import *
+from .session import SAPGuiSession
 import warnings
 from typing import Dict, List, Union
 
 
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/4af24c3281fb4d6a809e53238562d3b2.html?locale=en-US
 class Grid:
-    def __init__(self, grid_obj: win32com.client.CDispatch, session: win32com.client.CDispatch):
+    def __init__(self, grid_obj: win32com.client.CDispatch, session: SAPGuiSession):
         self._component_target_index = 0
         self.grid_obj = grid_obj
         self.session = session
