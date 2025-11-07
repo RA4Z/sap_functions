@@ -57,7 +57,8 @@ class Table:
         :param skip_error: Skip this function if occur any error
         """
         try:
-            self.table_obj.getCell(row, column).text = desired_text
+            if self.table_obj.getCell(row, column).changeable:
+                self.table_obj.getCell(row, column).text = desired_text
         except:
             if not skip_error:
                 raise Exception("Write cell value failed.")
@@ -98,7 +99,8 @@ class Table:
         :param desired_operator: Boolean with the desired operator in the SAP Table cell's checkbox
         """
         try:
-            self.table_obj.getCell(row, column).Selected = desired_operator
+            if self.table_obj.getCell(row, column).changeable:
+                self.table_obj.getCell(row, column).selected = desired_operator
         except:
             if not skip_error:
                 raise Exception("Flag Cell Failed.")
