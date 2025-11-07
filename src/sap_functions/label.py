@@ -1,8 +1,10 @@
 import win32com.client
 import warnings
+from typing import Dict, List
+
 
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/2e44c4f890524686977e9729565f7824.html?locale=en-US
-class Label():
+class Label:
     def __init__(self, session: win32com.client.CDispatch, window: int = 0):
         self.session = session
         self.window = window
@@ -43,7 +45,7 @@ class Label():
                 self.session.findById(f"wnd[{self.window}]").sendVKey(82)
         return content
 
-    def get_label_content(self) -> dict:
+    def get_label_content(self) -> Dict[str, List]:
         """
         Deprecated: use `Label.get_content` instead.
 
@@ -100,8 +102,8 @@ class Label():
                 self.session.findById(f"wnd[{self.window}]").sendVKey(82)
 
         return {'header': header, 'content': content}
-    
-    def get_content(self) -> dict:
+
+    def get_content(self) -> Dict[str, List]:
         """
         Store all the content from a SAP Label, the data will be stored and returned in a dictionary with
         'header' and 'content' items

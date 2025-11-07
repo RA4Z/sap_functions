@@ -1,6 +1,7 @@
 import win32com.client
 import warnings
 
+
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/8f08be87b0194d9882d0382eae798617.html?locale=en-US
 class Node:
     def __init__(self, node_obj: win32com.client.CDispatch):
@@ -56,13 +57,13 @@ class Node:
             results.append(text)
 
         return results
-    
+
     def get_content(self) -> list:
         """
         Get all Nodes names in a list format
         :return: A list of string with every Node text
         """
-       
+
         results = []
         parent = self.node_obj.GetAllNodeKeys()
         for item in parent:

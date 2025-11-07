@@ -1,17 +1,20 @@
 from .utils import *
 import copy
+from typing import Dict, List
 import win32com.client
 import warnings
 
+
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/ce1d9e64355d49568e5def5271aea2db.html?locale=en-US
 class Table:
-    def __init__(self, table_obj: win32com.client.CDispatch, session: win32com.client.CDispatch, target_index: int, window:int = 0):
+    def __init__(self, table_obj: win32com.client.CDispatch, session: win32com.client.CDispatch, target_index: int,
+                 window: int = 0):
         self._component_target_index = target_index
         self._target_index = target_index
         self.table_obj = table_obj
         self.session = session
         self.window = window
-        
+
     def _return_table(self):
         self._component_target_index = copy.copy(self._target_index)
         return scroll_through_table(self, f'wnd[{self.window}]/usr')
@@ -114,7 +117,7 @@ class Table:
             if not skip_error:
                 raise Exception("Click Cell Failed.")
 
-    def get_table_content(self, skip_error: bool = False) -> dict:
+    def get_table_content(self, skip_error: bool = False) -> Dict[str, List[str]]:
         """
         Deprecated: use `Table.get_content` instead.
 
@@ -126,7 +129,7 @@ class Table:
         warnings.warn("Deprecated in 1.1 "
                       "Table.get_table_content will be removed in 1.5 "
                       "Use Table.get_content instead.", DeprecationWarning, stacklevel=2)
-        
+
         try:
             self._return_table().VerticalScrollbar.Position = 0
             obj_now = self._return_table()
@@ -175,14 +178,14 @@ class Table:
             if not skip_error:
                 raise Exception("Get table content failed.")
 
-    def get_content(self, skip_error: bool = False) -> dict:
+    def get_content(self, skip_error: bool = False) -> Dict[str, List[str]]:
         """
         Store all the content from a SAP Table, the data will be stored and returned in a dictionary with 'header' and
         'content' items
         :param skip_error: Skip this function if occur any error
         :return: A dictionary with 'header' and 'content' items
         """
-        
+
         try:
             self._return_table().VerticalScrollbar.Position = 0
             obj_now = self._return_table()
@@ -225,8 +228,72 @@ class Table:
 
                 obj_now.VerticalScrollbar.Position = (visible_row + 1) * i
                 obj_now = self._return_table()
-            return {'header': header, 'content': content}
+            return {'header': list(header), 'content': list(content)}
 
+        except:
+            if not skip_error:
+                raise Exception("Get table content failed.")
+
+    def get_columns(self, *column_text: str, skip_error: bool = False) -> Union[Dict[str, List[str]], list]:
+        """
+        Return each column content
+        :param column_id: Table list of columns
+        :param skip_error: Skip this function if occur any error
+        :return: A dictionary/list with the desired content, when more than one column is desired, a dictionary with 'header' and 'content' items will be returned
+        """
+        try:
+            self._return_table().VerticalScrollbar.Position = 0
+            obj_now = self._return_table()
+            added_rows = []
+
+            header = []
+            content = []
+
+            columns = obj_now.columns.count
+            visible_rows = obj_now.visibleRowCount
+            rows = obj_now.rowCount / visible_rows
+
+            iteration_plus = 0
+            if obj_now.rowCount > visible_rows:
+                iteration_plus = 1
+
+            absolute_row = 0
+
+            for c in range(columns):
+                col_name = obj_now.columns.elementAt(c).title
+                if col_name in column_text:
+                    header.append(col_name)
+
+            for i in range(int(rows) + iteration_plus):
+                for visible_row in range(visible_rows):
+                    active_row = []
+                    for c in range(columns):
+                        if obj_now.columns.elementAt(c).title in header:
+                            if len(header) > 1:
+                                    try:
+                                        active_row.append(obj_now.getCell(visible_row, c).text)
+                                    except:
+                                        active_row.append(None)
+                            else:
+                                try:
+                                    content.append(obj_now.getCell(visible_row, c).text)
+                                except:
+                                    content.append(None)
+
+                    absolute_row += 1
+
+                    if not all(value is None for value in active_row) and absolute_row not in added_rows:
+                        added_rows.append(absolute_row)
+                        if len(header) > 1:
+                            content.append(active_row)
+
+                obj_now.VerticalScrollbar.Position = (visible_row + 1) * i
+                obj_now = self._return_table()
+
+            if len(header) > 1:
+                return {'header': list(header), 'content': list(content)}
+            else:
+                return list(content)
         except:
             if not skip_error:
                 raise Exception("Get table content failed.")

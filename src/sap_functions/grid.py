@@ -1,6 +1,7 @@
 from .utils import *
-from typing import Union
 import warnings
+from typing import Dict, List, Union
+
 
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/4af24c3281fb4d6a809e53238562d3b2.html?locale=en-US
 class Grid:
@@ -100,8 +101,8 @@ class Grid:
             return self.grid_obj.getCellValue(index, column_id)
         except:
             raise Exception("Get cell value failed.")
-    
-    def get_grid_columns(self, *column_id: str) -> Union[dict, list]:
+
+    def get_grid_columns(self, *column_id: str) -> Union[Dict[str, List[str]], list]:
         """
         Deprecated: use `Grid.get_columns` instead.
 
@@ -125,7 +126,7 @@ class Grid:
         except:
             raise Exception("Get Grid Columns Failed.")
 
-    def get_columns(self, *column_id: str) -> Union[dict, list]:
+    def get_columns(self, *column_id: str) -> Union[Dict[str, List[str]], list]:
         """
         Return each column content
         :param column_id: Grid list of columns "Field Name" found in the respective column Technical Information tab
@@ -164,7 +165,7 @@ class Grid:
 
         except:
             raise Exception("Get Grid Row Failed.")
-        
+
     def get_row(self, row: int) -> list:
         """
         Get a grid row content
@@ -181,7 +182,7 @@ class Grid:
         except:
             raise Exception("Get Grid Row Failed.")
 
-    def get_grid_content(self) -> dict:
+    def get_grid_content(self) -> Dict[str, List[str]]:
         """
         Deprecated: use `Grid.get_content` instead.
 
@@ -203,7 +204,7 @@ class Grid:
         except:
             raise Exception("Get all Grid Content Failed.")
 
-    def get_content(self) -> dict:
+    def get_content(self) -> Dict[str, List[str]]:
         """
         Store all the content from a SAP Grid, the data will be stored and returned in a dictionary with 'header' and
         'content' items
