@@ -7,12 +7,14 @@ class SAPGridView:
     columnCount: int
     rowCount: int
     visibleRowCount: int
-    def setCurrentCell(self, row: int, column: str) -> None: """If row and column identify a valid cell, this cell becomes the current cell. Otherwise, an exception is raised."""
+    def triggerModified(self) -> None: """Notifies the server of multiple changes in cells. Typically this method should be called after multiple calls to ModifyCell"""
+    def modifyCheckbox(self, row: int, column: str, desired_operator: bool) -> None: """If row and column identify a valid editable cell containing a checkbox, then the value of the cell is changed. Otherwise, an exception is raised"""
+    def setCurrentCell(self, row: int, column: str) -> None: """If row and column identify a valid cell, this cell becomes the current cell. Otherwise, an exception is raised"""
     def doubleClickCurrentCell(self) -> None: """This function emulates a mouse double click on the current cell"""
     def clearSelection(self) -> None: """Calling clearSelection removes all row, column and cell selections"""
     def clickCurrentCell(self) -> None: """This function emulates a mouse click on the current cell"""
     def contextMenu(self) -> None: """Calling contextMenu emulates the context menu request"""
-    def selectAll(self) -> None: """This function selects the whole grid content (i.e. all rows and all columns)."""
+    def selectAll(self) -> None: """This function selects the whole grid content (i.e. all rows and all columns)"""
     def selectContextMenuItem(self, item: str) -> None: """Select an item from the control’s context menu"""
     def selectColumn(self, column: str) -> None: """This function adds the specified column to the collection of the selected columns"""
     def getCellValue(self, row: int, column: str) -> str: """Returns the value of the cell as a string"""
