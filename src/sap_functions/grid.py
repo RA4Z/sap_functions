@@ -253,6 +253,18 @@ class Grid:
         except:
             raise Exception("Click Cell Failed.")
 
+    def open_cell_modal(self, index: int, column_id: str) -> None:
+        """
+        This function will select and open a cell modal in a SAP Grid cell
+        :param index: Row number of the desired cell
+        :param column_id: Grid column "Field Name" found in the respective column Technical Information tab
+        """
+        try:
+            self.grid_obj.setCurrentCell(index, column_id)
+            self.session.findById(f'wnd[{self.window}]').sendVKey(4)
+        except:
+            raise Exception("Open Cell Modal Failed.")
+
     def press_button(self, field_name: str, skip_error: bool = False) -> None:
         """
         This function will press any button in the SAP Grid component
