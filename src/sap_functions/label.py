@@ -62,7 +62,7 @@ class Label:
         content = []
         columns = []
 
-        children = self.session.findById(f"wnd[0]/usr").children
+        children = self.session.findById(f"wnd[{self.window}]/usr").children
         for field in children:
             if field.type == 'GuiLabel':
                 if field.charLeft not in columns:
@@ -115,7 +115,7 @@ class Label:
         content = []
         columns = []
 
-        children = self.session.findById(f"wnd[0]/usr").children
+        children = self.session.findById(f"wnd[{self.window}]/usr").children
         for field in children:
             if field.type == 'GuiLabel':
                 if field.charLeft not in columns:
