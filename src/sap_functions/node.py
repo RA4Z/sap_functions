@@ -40,7 +40,7 @@ class Node:
         node_id = self.node_obj.SelectedNode
         self.node_obj.expandNode(node_id)
 
-    def get_node_content(self) -> list:
+    def get_node_content(self) -> tuple:
         """
         Deprecated: use `Node.get_content` instead.
 
@@ -56,9 +56,9 @@ class Node:
             text = self.node_obj.GetNodeTextByKey(item)
             results.append(text)
 
-        return results
+        return tuple(results)
 
-    def get_content(self) -> list:
+    def get_content(self) -> tuple:
         """
         Get all Nodes names in a list format
         :return: A list of string with every Node text
@@ -70,4 +70,4 @@ class Node:
             text = self.node_obj.GetNodeTextByKey(item)
             results.append(text)
 
-        return results
+        return tuple(results)
