@@ -1,7 +1,7 @@
 from .utils import *
 from .session import SAPGuiSession, SAPGridView
 import warnings
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
 
 
 # https://help.sap.com/docs/sap_gui_for_windows/b47d018c3b9b45e897faf66a6c0885a8/4af24c3281fb4d6a809e53238562d3b2.html?locale=en-US
@@ -127,7 +127,7 @@ class Grid:
         except:
             raise Exception("Get Grid Columns Failed.")
 
-    def get_columns(self, *column_id: str) -> Union[Dict[str, List[str]], list]:
+    def get_columns(self, *column_id: str) -> dict[str, tuple[str, ...] | tuple[tuple[str, ...], ...]] | tuple[str, ...]:
         """
         Return each column content
         :param column_id: Grid list of columns "Field Name" found in the respective column Technical Information tab
@@ -136,11 +136,11 @@ class Grid:
         try:
             rows = self.count_rows()
             if len(column_id) > 1:
-                header = [self.grid_obj.getCellValue(i, c) for c in column_id for i in range(-1, 0)]
-                data = [[self.grid_obj.getCellValue(i, c) for c in column_id] for i in range(0, rows)]
+                header = tuple(self.grid_obj.getCellValue(i, c) for c in column_id for i in range(-1, 0))
+                data = tuple(tuple(self.grid_obj.getCellValue(i, c) for c in column_id) for i in range(0, rows))
                 return {'header': header, 'content': data}
             else:
-                data = [self.grid_obj.getCellValue(i, column_id[0]) for i in range(0, rows)]
+                data = tuple(self.grid_obj.getCellValue(i, column_id[0]) for i in range(0, rows))
                 return data
 
         except:
@@ -205,7 +205,7 @@ class Grid:
         except:
             raise Exception("Get all Grid Content Failed.")
 
-    def get_content(self) -> Dict[str, List[str]]:
+    def get_content(self) -> Dict[str, Tuple[str, ...] | Tuple[Tuple[str, ...], ...]]:
         """
         Store all the content from a SAP Grid, the data will be stored and returned in a dictionary with 'header' and
         'content' items
@@ -215,8 +215,8 @@ class Grid:
             grid_column = self.grid_obj.columnOrder
             rows = self.count_rows()
             cols = self.grid_obj.columnCount
-            header = [self.grid_obj.getCellValue(i, grid_column[c]) for c in range(cols) for i in range(-1, 0)]
-            data = [[self.grid_obj.getCellValue(i, grid_column[c]) for c in range(cols)] for i in range(0, rows)]
+            header = tuple(self.grid_obj.getCellValue(i, grid_column[c]) for c in range(cols) for i in range(-1, 0))
+            data = tuple(tuple(self.grid_obj.getCellValue(i, grid_column[c]) for c in range(cols)) for i in range(0, rows))
             return {'header': header, 'content': data}
 
         except:
