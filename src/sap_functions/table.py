@@ -1,7 +1,7 @@
 from .utils import *
 import copy
 from .session import SAPGuiSession
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import win32com.client
 import warnings
 
@@ -181,7 +181,7 @@ class Table:
             if not skip_error:
                 raise Exception("Get table content failed.")
 
-    def get_content(self, skip_error: bool = False) -> Dict[str, List[str]]:
+    def get_content(self, skip_error: bool = False) -> Dict[str, Tuple[str, ...]]:
         """
         Store all the content from a SAP Table, the data will be stored and returned in a dictionary with 'header' and
         'content' items
@@ -231,16 +231,16 @@ class Table:
 
                 obj_now.VerticalScrollbar.Position = (visible_row + 1) * i
                 obj_now = self._return_table()
-            return {'header': list(header), 'content': list(content)}
+            return {'header': tuple(header), 'content': tuple(content)}
 
         except:
             if not skip_error:
                 raise Exception("Get table content failed.")
 
-    def get_columns(self, *column_text: str, skip_error: bool = False) -> Union[Dict[str, List[str]], list]:
+    def get_columns(self, *column_text: str, skip_error: bool = False) -> Union[Dict[str, Tuple[str, ...]], Tuple]:
         """
         Return each column content
-        :param column_id: Table list of columns
+        :param column_text: Table list of columns
         :param skip_error: Skip this function if occur any error
         :return: A dictionary/list with the desired content, when more than one column is desired, a dictionary with 'header' and 'content' items will be returned
         """
@@ -252,6 +252,7 @@ class Table:
             header = []
             content = []
 
+            visible_row = 0
             columns = obj_now.columns.count
             visible_rows = obj_now.visibleRowCount
             rows = obj_now.rowCount / visible_rows
@@ -294,9 +295,9 @@ class Table:
                 obj_now = self._return_table()
 
             if len(header) > 1:
-                return {'header': list(header), 'content': list(content)}
+                return {'header': tuple(header), 'content': tuple(content)}
             else:
-                return list(content)
+                return tuple(content)
         except:
             if not skip_error:
                 raise Exception("Get table content failed.")
