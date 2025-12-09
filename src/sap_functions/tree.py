@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, Tuple, Union
 import win32com.client
 import warnings
 
@@ -8,7 +8,7 @@ class Tree:
     def __init__(self, tree_obj: win32com.client.CDispatch):
         self.tree_obj = tree_obj
 
-    def get_tree_columns(self, *column_text: str) -> Union[Dict[str, List[str]], list]:
+    def get_tree_columns(self, *column_text: str) -> Union[Dict[str, Tuple[str, ...]], tuple]:
         """
         Deprecated: use `Tree.get_columns` instead.
 
@@ -47,14 +47,14 @@ class Tree:
                     content.append(active_row)
 
             if len(column_text) > 1:
-                return {'header': header, 'content': content}
+                return {'header': tuple(header), 'content': tuple(content)}
             else:
-                return content
+                return tuple(content)
 
         except:
             raise Exception("Get Tree Columns Failed.")
 
-    def get_columns(self, *column_text: str) -> Union[Dict[str, List[str]], list]:
+    def get_columns(self, *column_text: str) -> Union[Dict[str, Tuple[str, ...]], tuple]:
         """
         Return each column content
         :param column_text: Tree list of columns "Field Text"
@@ -87,14 +87,14 @@ class Tree:
                     content.append(active_row)
 
             if len(column_text) > 1:
-                return {'header': header, 'content': content}
+                return {'header': tuple(header), 'content': tuple(content)}
             else:
-                return content
+                return tuple(content)
 
         except:
             raise Exception("Get Tree Columns Failed.")
 
-    def get_tree_content(self, skip_error: bool = False) -> Dict[str, List[str]]:
+    def get_tree_content(self, skip_error: bool = False) -> Dict[str, Tuple[str, ...]]:
         """
         Deprecated: use `Tree.get_content` instead.
 
@@ -127,13 +127,13 @@ class Tree:
                     active_row.append(item)
 
                 content.append(active_row)
-            return {'header': header, 'content': content}
+            return {'header': tuple(header), 'content': tuple(content)}
 
         except:
             if not skip_error:
                 raise Exception("Get tree content failed.")
 
-    def get_content(self, skip_error: bool = False) -> Dict[str, List[str]]:
+    def get_content(self, skip_error: bool = False) -> Dict[str, Tuple[str, ...]]:
         """
         Store all the content from a SAP Tree, the data will be stored and returned in a dictionary with 'header' and
         'content' items
@@ -160,7 +160,7 @@ class Tree:
                     active_row.append(item)
 
                 content.append(active_row)
-            return {'header': header, 'content': content}
+            return {'header': tuple(header), 'content': tuple(content)}
 
         except:
             if not skip_error:
