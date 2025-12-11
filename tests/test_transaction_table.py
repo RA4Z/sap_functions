@@ -14,8 +14,8 @@ def test_transaction():
    sap.select_transaction(os.getenv("transaction_2"))
 
 def test_insert_data_transaction():
-   sap.write_text_field(os.getenv("transaction_2_field_1_name"), os.getenv("transaction_2_field_1_value"))
-   sap.write_text_field(os.getenv("transaction_2_field_2_name"), os.getenv("transaction_2_field_2_value"))
+   sap.set.write_text_field(os.getenv("transaction_2_field_1_name"), os.getenv("transaction_2_field_1_value"))
+   sap.set.write_text_field(os.getenv("transaction_2_field_2_name"), os.getenv("transaction_2_field_2_value"))
 
 def test_run_transaction():
    sap.run_actual_transaction()
@@ -23,7 +23,7 @@ def test_run_transaction():
 table = None
 def test_get_table():
    global table
-   table = sap.get_table()
+   table = sap.get.table()
 
 def test_table_count_visible_rows():
    rows = table.count_visible_rows()

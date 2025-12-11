@@ -1,4 +1,4 @@
-from .sap import SAP
+from src.sap_functions.SAP.sap import SAP
 from .grid import Grid
 from .table import Table
 from .label import Label

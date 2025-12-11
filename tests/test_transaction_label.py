@@ -15,17 +15,17 @@ def test_transaction():
    sap.select_transaction(os.getenv("transaction_5"))
 
 def test_insert_data_transaction():
-   sap.write_text_field(os.getenv("transaction_5_field_5_name"), os.getenv("transaction_5_field_5_value"))
+   sap.set.write_text_field(os.getenv("transaction_5_field_5_name"), os.getenv("transaction_5_field_5_value"))
 
 def test_run_transaction():
    sap.run_actual_transaction()
 
 def test_get_label():
-   grid = sap.get_grid()
+   grid = sap.get.grid()
    exec(os.getenv("transaction_5_before_label"))
-   label = sap.get_label()
+   label = sap.get.label()
    label.get_all_screen_labels()
 
 def test_get_content():
-   label = sap.get_label()
+   label = sap.get.label()
    label.get_content()

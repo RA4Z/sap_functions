@@ -16,7 +16,7 @@ def test_transaction():
    sap.select_transaction(os.getenv("transaction_4"))
 
 def test_select_project():
-   sap.press_button(os.getenv("transaction_4_open_pop_up"))
+   sap.action.press_button(os.getenv("transaction_4_open_pop_up"))
    exec(os.getenv("transaction_4_pep_element"))
    sap.run_actual_transaction()
 
@@ -24,7 +24,7 @@ def test_select_project():
 node = None
 def test_get_node():
    global node
-   node = sap.get_node()
+   node = sap.get.node()
    
 def test_expand_node():
    node.expand_selected_node()
