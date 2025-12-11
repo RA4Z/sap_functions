@@ -59,20 +59,20 @@ def test_grid_layout():
 
 def test_grid_get_content():
    content = grid.get_content()
-   assert type(content.get("header")).__name__ == "list"
-   assert type(content.get("content")).__name__ == "list"
+   assert type(content.get("header")).__name__ == "tuple"
+   assert type(content.get("content")).__name__ == "tuple"
 
 def test_grid_rows():
    rows = grid.count_rows()
    assert type(rows).__name__ == "int"
    row = grid.get_row(0)
-   assert type(row).__name__ == "list"
+   assert type(row).__name__ == "tuple"
    
 def test_grid_columns():
    column_id = grid.get_column_id(os.getenv("transaction_1_grid_column_name"))
    assert type(column_id).__name__ == "str"
    columns = grid.get_columns(column_id)
-   assert type(columns).__name__ == "list"   
+   assert type(columns).__name__ == "tuple"   
 
 def test_grid_get_cell_value():
    cell_value = grid.get_cell_value(0, os.getenv("transaction_1_grid_column_id"))

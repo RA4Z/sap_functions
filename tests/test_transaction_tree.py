@@ -23,9 +23,9 @@ def test_get_tree():
 
 def test_tree_get_content():
    content = tree.get_content()
-   assert type(content.get("header")).__name__ == "list"
-   assert type(content.get("content")).__name__ == "list"
+   assert type(content.get("header")).__name__ == "tuple"
+   assert type(content.get("content")).__name__ == "tuple"
 
 def test_tree_columns():
    columns = tree.get_columns()
-   assert type(columns).__name__ == "list"
+   assert type(columns).__name__ == "tuple"

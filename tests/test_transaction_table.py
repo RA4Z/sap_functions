@@ -41,8 +41,8 @@ def test_table_select_actions():
 
 def test_table_get_content():
    content = table.get_content()
-   assert type(content.get("header")).__name__ == "list"
-   assert type(content.get("content")).__name__ == "list"
+   assert type(content.get("header")).__name__ == "tuple"
+   assert type(content.get("content")).__name__ == "tuple"
 
 def test_table_internal_methods():
    table_obj = table._return_table()

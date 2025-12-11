@@ -37,4 +37,4 @@ def test_click_selected_node():
 
 def test_node_get_content():
    content = node.get_content()
-   assert type(content).__name__ == "list"
+   assert type(content).__name__ == "tuple"

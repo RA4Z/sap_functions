@@ -167,7 +167,7 @@ class Grid:
         except:
             raise Exception("Get Grid Row Failed.")
 
-    def get_row(self, row: int) -> list:
+    def get_row(self, row: int) -> tuple:
         """
         Get a grid row content
         :param row: The desired grid row
@@ -177,12 +177,12 @@ class Grid:
             grid_column = self.grid_obj.columnOrder
             cols = self.grid_obj.columnCount
 
-            data = [self.grid_obj.getCellValue(row, grid_column[c]) for c in range(cols)]
+            data = tuple(self.grid_obj.getCellValue(row, grid_column[c]) for c in range(cols))
             return data
 
         except:
             raise Exception("Get Grid Row Failed.")
-
+    
     def get_grid_content(self) -> Dict[str, List[str]]:
         """
         Deprecated: use `Grid.get_content` instead.
