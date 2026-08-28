@@ -7,7 +7,7 @@ name = "sap_functions"
 version = "1.3"
 authors = [
   { name="Gabriel Volles Marinho", email="gabrielvmarinho1711@gmail.com" },
-  { name="Robert Aron Zimmermann", email="robert.raz@gmail.com" },
+  { name="Robert Aron Zimmermann", email="robertz.raz@gmail.com" },
 ]
 description = "A utility package for sap automations"
 readme = "README.md"
