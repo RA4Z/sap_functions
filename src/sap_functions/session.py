@@ -8,6 +8,8 @@ class SAPGridView:
     rowCount: int
     visibleRowCount: int
     def setCurrentCell(self, row: int, column: str) -> None: """If row and column identify a valid cell, this cell becomes the current cell. Otherwise, an exception is raised."""
+    def modifyCheckbox(self, row: int, column: str, operator: bool) -> None: """Flag as true or false an checkbox component in the cell"""
+    def triggerModified(self) -> None: """Update Grid to accept checkboxes changes"""
     def doubleClickCurrentCell(self) -> None: """This function emulates a mouse double click on the current cell"""
     def clearSelection(self) -> None: """Calling clearSelection removes all row, column and cell selections"""
     def clickCurrentCell(self) -> None: """This function emulates a mouse click on the current cell"""

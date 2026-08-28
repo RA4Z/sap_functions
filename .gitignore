@@ -2,3 +2,4 @@ dist/
 .env
 .coverage
 .venv
+sap_tests.py

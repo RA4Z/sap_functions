@@ -103,30 +103,6 @@ class Grid:
         except:
             raise Exception("Get cell value failed.")
 
-    def get_grid_columns(self, *column_id: str) -> Union[Dict[str, List[str]], list]:
-        """
-        Deprecated: use `Grid.get_columns` instead.
-
-        Return each column content
-        :param column_id: Grid list of columns "Field Name" found in the respective column Technical Information tab
-        :return: A dictionary/list with the desired content, when more than one column is desired, a dictionary with 'header' and 'content' items will be returned
-        """
-        warnings.warn("Deprecated in 1.1 "
-                      "Grid.get_grid_columns will be removed in 1.5 "
-                      "Use Grid.get_columns instead.", DeprecationWarning, stacklevel=2)
-        try:
-            rows = self.count_rows()
-            if len(column_id) > 1:
-                header = [self.grid_obj.getCellValue(i, c) for c in column_id for i in range(-1, 0)]
-                data = [[self.grid_obj.getCellValue(i, c) for c in column_id] for i in range(0, rows)]
-                return {'header': header, 'content': data}
-            else:
-                data = [self.grid_obj.getCellValue(i, column_id[0]) for i in range(0, rows)]
-                return data
-
-        except:
-            raise Exception("Get Grid Columns Failed.")
-
     def get_columns(self, *column_id: str) -> Union[Dict[str, List[str]], list]:
         """
         Return each column content
@@ -146,27 +122,6 @@ class Grid:
         except:
             raise Exception("Get Grid Columns Failed.")
 
-    def get_grid_row(self, row: int) -> list:
-        """
-        Deprecated: use `Grid.get_row` instead.
-
-        Get a grid row content
-        :param row: The desired grid row
-        :return: A list with the row content
-        """
-        warnings.warn("Deprecated in 1.1 "
-                      "Grid.get_grid_row will be removed in 1.5 "
-                      "Use Grid.get_row instead.", DeprecationWarning, stacklevel=2)
-        try:
-            grid_column = self.grid_obj.columnOrder
-            cols = self.grid_obj.columnCount
-
-            data = [self.grid_obj.getCellValue(row, grid_column[c]) for c in range(cols)]
-            return data
-
-        except:
-            raise Exception("Get Grid Row Failed.")
-
     def get_row(self, row: int) -> list:
         """
         Get a grid row content
@@ -182,28 +137,6 @@ class Grid:
 
         except:
             raise Exception("Get Grid Row Failed.")
-
-    def get_grid_content(self) -> Dict[str, List[str]]:
-        """
-        Deprecated: use `Grid.get_content` instead.
-
-        Store all the content from a SAP Grid, the data will be stored and returned in a dictionary with 'header' and
-        'content' items
-        :return: A dictionary with 'header' and 'content' items
-        """
-        warnings.warn("Deprecated in 1.1 "
-                      "Grid.get_grid_content will be removed in 1.5 "
-                      "Use Grid.get_content instead.", DeprecationWarning, stacklevel=2)
-        try:
-            grid_column = self.grid_obj.columnOrder
-            rows = self.count_rows()
-            cols = self.grid_obj.columnCount
-            header = [self.grid_obj.getCellValue(i, grid_column[c]) for c in range(cols) for i in range(-1, 0)]
-            data = [[self.grid_obj.getCellValue(i, grid_column[c]) for c in range(cols)] for i in range(0, rows)]
-            return {'header': header, 'content': data}
-
-        except:
-            raise Exception("Get all Grid Content Failed.")
 
     def get_content(self) -> Dict[str, List[str]]:
         """
