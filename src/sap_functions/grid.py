@@ -1,6 +1,5 @@
 from .utils import *
 from .session import SAPGuiSession, SAPGridView
-import warnings
 from typing import Dict, List, Union
 
 
