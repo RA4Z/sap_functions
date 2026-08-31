@@ -102,7 +102,7 @@ class Tree:
 
             for i in range(1, len(obj_key_values)):
                 row_id = obj_key_values(i).strip()
-                parent_id = obj_key_values(i).strip()
+                parent_id = self.tree_obj.GetParent(obj_key_values(i)).strip()
                 active_row = [row_id, parent_id]
                 for col in columns:
                     item = str(self.tree_obj.getItemText(obj_key_values(i), columns[col]))
