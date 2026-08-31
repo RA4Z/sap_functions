@@ -13,5 +13,5 @@ class BaseSapConnection:
 
         if connection.Children(0).info.systemName == 'EQ0':
             print("You're with SAP Quality Assurance open, (SAP QA)\nMany things may not happen as desired!")
-        self.session: SAPGuiSession = connection.Children(window)
+        self.session = SAPGuiSession(connection.Children(window))
         self.window = active_window(self)
