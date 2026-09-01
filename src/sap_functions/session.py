@@ -1,4 +1,4 @@
-from typing import Iterator, Literal, Any
+from typing import Iterator, Literal, Any, TYPE_CHECKING
 
 vKeys = {
     "Enter": 0,
@@ -100,22 +100,21 @@ class SAPGuiInfo:
 
 
 class SAPGuiFrameWindow:
-    name: str
-    text: str
-    type: str
-
     def __init__(self, sap_window_com_object):
         self._sap_window = sap_window_com_object
 
     def sendVKey(self, key: VKeyNames) -> None:
-            """Sends the command corresponding to the specified key in string format."""
-            key_code = vKeys.get(key)
-            print(key_code)
-            if key_code is None:
-                raise ValueError(f"Invalid VKey command '{key}'.")
-            self._sap_window.sendVKey(key_code)
+        """Sends the command corresponding to the specified key in string format."""
+        key_code = vKeys.get(key)
+        if key_code is None:
+            raise ValueError(f"Invalid VKey command '{key}'.")
+        self._sap_window.sendVKey(key_code)
 
-    def close(self) -> None: """The function attempts to close the window. Trying to close the last main window of a session will not succeed immediately; the dialog ‘Do you really want to log off?’ will be displayed first"""
+    if TYPE_CHECKING:
+        name: str
+        text: str
+        type: str
+        def close(self) -> None: ...
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self._sap_window, name)
@@ -153,19 +152,21 @@ class GuiComponent:
 
 
 class SAPGuiSession:
-    info: SAPGuiInfo
-    isActive: bool
-
     def __init__(self, raw_session: Any):
         self._raw_session = raw_session
+
     @property
     def activeWindow(self) -> SAPGuiFrameWindow:
         """Returns the active window wrapped in our custom class to intercept sendVKey."""
         return SAPGuiFrameWindow(self._raw_session.ActiveWindow)
-    def CreateSession(self) -> None: ...
-    def EndTransaction(self) -> None: ...
-    def findById(self, identifier: str) -> GuiComponent: ...
-    def startTransaction(self, transaction: str) -> None: ...
+
+    if TYPE_CHECKING:
+        info: SAPGuiInfo
+        isActive: bool
+        def CreateSession(self) -> None: ...
+        def EndTransaction(self) -> None: ...
+        def findById(self, identifier: str) -> GuiComponent: ...
+        def startTransaction(self, transaction: str) -> None: ...
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self._raw_session, name)
