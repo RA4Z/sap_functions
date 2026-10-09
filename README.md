@@ -4,6 +4,8 @@ Library with utility classes and functions to facilitate the development of SAP 
 
 This module is built on top of SAP Scripting and aims to making the development of automated workflows easier and quicker.
 
+User-oriented documentation, including installation, examples, and API guides, is available in the [documentation vault](docs/README.md). It can be opened directly as an Obsidian vault.
+
 ## Implementation example
 ```python
 from sap_functions import SAP
