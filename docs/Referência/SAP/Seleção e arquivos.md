@@ -4,6 +4,8 @@ tags: [referência, sap, seleção, arquivos]
 
 # SAP: seleção múltipla e arquivos
 
+Nota individual: [[Referência/Métodos/multiple_selection_paste_data]].
+
 ## `multiple_selection_field(field_name, target_index=0, selected_tab=0, skip_error=False)`
 
 Abre a janela de seleção múltipla ligada ao campo. Ela não insere valores por si só; chame `multiple_selection_paste_data` em seguida.

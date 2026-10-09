@@ -39,6 +39,8 @@ Este diretório é um vault do Obsidian para a biblioteca `sap_functions`. Para 
 - [[Referência/Grid|Grid]]
 - [[Referência/Table|Table]]
 - [[Referência/Tree, Node e Label|Tree, Node e Label]]
+- [[Referência/Retornos de dados/Visão geral|Retornos de dados (para IAs)]]
+- [[Referência/Métodos/get_content|Contrato de get_content()]]
 
 ## Para quem mantém a biblioteca
 

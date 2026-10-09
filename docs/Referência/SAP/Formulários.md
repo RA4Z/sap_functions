@@ -4,6 +4,8 @@ tags: [referência, sap, formulários]
 
 # SAP: formulários
 
+Notas individuais: [[Referência/Métodos/write_text_field]], [[Referência/Métodos/flag_field]] e [[Referência/Métodos/press_button]].
+
 Os métodos abaixo localizam controles pelo texto do rótulo. `target_index=0` usa a primeira ocorrência repetida; `selected_tab=0` usa a primeira aba (ou aceite o nome da aba); `skip_error=False` lança uma exceção quando o controle não é encontrado ou a ação falha.
 
 ## `write_text_field(field_name, desired_text, target_index=0, selected_tab=0, skip_error=False)`

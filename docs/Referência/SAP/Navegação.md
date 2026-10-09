@@ -4,6 +4,8 @@ tags: [referência, sap, navegação]
 
 # SAP: navegação
 
+Notas individuais: [[Referência/Métodos/select_transaction]] e [[Referência/Métodos/run_actual_transaction]].
+
 ## `SAP(window=0)`
 
 Cria a conexão com uma sessão SAP GUI já aberta. `window` é o índice da sessão a usar; `0` usa a primeira. A biblioteca confirma que há um usuário autenticado e, se estiver em `S000`, navega para a tela principal. Falha se não houver uma conexão ou login SAP disponível.
