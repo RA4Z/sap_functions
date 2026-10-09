@@ -1,4 +1,4 @@
-from typing import Iterator, Literal, Any, TYPE_CHECKING
+from typing import Iterator, Literal, Any, TYPE_CHECKING, Union
 
 vKeys = {
     "Enter": 0,
@@ -103,9 +103,9 @@ class SAPGuiFrameWindow:
     def __init__(self, sap_window_com_object):
         self._sap_window = sap_window_com_object
 
-    def sendVKey(self, key: VKeyNames) -> None:
-        """Sends the command corresponding to the specified key in string format."""
-        key_code = vKeys.get(key)
+    def sendVKey(self, key: Union[VKeyNames, int]) -> None:
+        """Sends a VKey by name (for example, ``\"F8\"``) or numeric SAP code."""
+        key_code = vKeys.get(key) if isinstance(key, str) else key
         if key_code is None:
             raise ValueError(f"Invalid VKey command '{key}'.")
         self._sap_window.sendVKey(key_code)
@@ -141,7 +141,7 @@ class GuiComponent:
 
     def clickCurrentCell(self): ...
     def Select(self) -> None: ...
-    def sendVKey(self, key: int) -> None: ...
+    def sendVKey(self, key: Union[VKeyNames, int]) -> None: ...
     def setFocus(self) -> None: ...
     def visualize(self) -> None: ...
     def containerType(self) -> str: ...
@@ -149,6 +149,26 @@ class GuiComponent:
     def press(self) -> None: ...
     def __getitem__(self, index: int) -> "GuiComponent": ...
     def __iter__(self) -> Iterator["GuiComponent"]: ...
+
+
+class SAPGuiComponent(GuiComponent):
+    """Proxy for SAP GUI components, adding named VKey support."""
+
+    def __init__(self, sap_component: Any):
+        object.__setattr__(self, "_sap_component", sap_component)
+
+    def sendVKey(self, key: Union[VKeyNames, int]) -> None:
+        """Sends a VKey by name (for example, ``\"Enter\"``) or numeric SAP code."""
+        key_code = vKeys.get(key) if isinstance(key, str) else key
+        if key_code is None:
+            raise ValueError(f"Invalid VKey command '{key}'.")
+        self._sap_component.sendVKey(key_code)
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._sap_component, name)
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        setattr(self._sap_component, name, value)
 
 
 class SAPGuiSession:
@@ -160,12 +180,15 @@ class SAPGuiSession:
         """Returns the active window wrapped in our custom class to intercept sendVKey."""
         return SAPGuiFrameWindow(self._raw_session.ActiveWindow)
 
+    def findById(self, identifier: str) -> SAPGuiComponent:
+        """Returns a component proxy with named VKey support."""
+        return SAPGuiComponent(self._raw_session.findById(identifier))
+
     if TYPE_CHECKING:
         info: SAPGuiInfo
         isActive: bool
         def CreateSession(self) -> None: ...
         def EndTransaction(self) -> None: ...
-        def findById(self, identifier: str) -> GuiComponent: ...
         def startTransaction(self, transaction: str) -> None: ...
 
     def __getattr__(self, name: str) -> Any:
