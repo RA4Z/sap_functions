@@ -40,7 +40,10 @@ class SAP(BaseSapConnection):
             transaction_upper = transaction.upper()
             self.session.startTransaction(transaction_upper)
             if self.session.activeWindow.name == 'wnd[1]' and 'CN' in transaction_upper:
-                self.session.findById("wnd[1]/usr/ctxtTCNT-PROF_DB").Text = "000000000001"
+                try:
+                    self.session.findById("wnd[1]/usr/ctxtTCNT-PROF_DB").Text = "000000000001"
+                except:
+                    self.session.findById("wnd[1]/usr/ctxtTCNTT-PROFID").text = "000000000001"
                 self.session.findById("wnd[1]/tbar[0]/btn[0]").press()
             if not self.session.info.transaction == transaction_upper:
                 raise Exception()
