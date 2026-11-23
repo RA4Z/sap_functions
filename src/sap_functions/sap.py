@@ -408,22 +408,28 @@ class SAP(BaseSapConnection):
         :param delete_values: Boolean to determine if you want to insert the list to delete it from the final result
         :param skip_error: Skip this function if occur any error
         """
-        uid = str(uuid.uuid4())
         self.window = active_window(self)
 
         if delete_values:
             self.change_active_tab(2)
 
         try:
-            with open(f'C:/Temp/{uid}.txt', 'w') as file:
-                file.write('\n'.join(data))
-            self.session.findById(f"wnd[{self.window}]/tbar[0]/btn[23]").press()
-            self.session.findById(f"wnd[{self.window + 1}]/usr/ctxtDY_PATH").text = 'C:/Temp'
-            self.session.findById(f"wnd[{self.window + 1}]/usr/ctxtDY_FILENAME").text = f"{uid}.txt"
-            self.session.findById(f"wnd[{self.window + 1}]/tbar[0]/btn[0]").press()
+            import win32clipboard, win32event
+            # Clipboard is shared by the whole Windows session, so hold a global mutex from copy until import
+            mutex = win32event.CreateMutex(None, False, "Global\\sap_functions_clipboard")
+            win32event.WaitForSingleObject(mutex, win32event.INFINITE)
+            try:
+                win32clipboard.OpenClipboard()
+                try:
+                    win32clipboard.EmptyClipboard()
+                    win32clipboard.SetClipboardData(win32clipboard.CF_UNICODETEXT, '\r\n'.join(data))
+                finally:
+                    win32clipboard.CloseClipboard()
+                # "Import from clipboard" button (replaces the file import, which now opens a Windows dialog)
+                self.session.findById(f"wnd[{self.window}]/tbar[0]/btn[24]").press()
+            finally:
+                win32event.ReleaseMutex(mutex)
             self.session.findById(f"wnd[{self.window}]/tbar[0]/btn[8]").press()
-            if os.path.exists(f'C:/Temp/{uid}.txt'):
-                os.remove(f'C:/Temp/{uid}.txt')
         except:
             if not skip_error: raise Exception("Multiple selection paste data failed.")
 

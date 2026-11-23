@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "16c09fd260a69128",
+        "id": "5ae5272d124af65b",
         "type": "tabs",
         "children": [
           {
-            "id": "19d53f164948b99a",
+            "id": "8e8a3afe423b5f69",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Referência/Componentes SAP.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "Componentes SAP"
+              "title": "Nova aba"
             }
           }
         ]
@@ -55,7 +51,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "content",
+                "query": "json",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -79,8 +75,7 @@
               "title": "Marcadores"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "horizontal",
@@ -189,10 +184,11 @@
       "bases:Criar nova base": false
     }
   },
-  "active": "19d53f164948b99a",
+  "active": "8e8a3afe423b5f69",
   "lastOpenFiles": [
-    "Referência/Grid.md",
+    "Sem título.base",
     "Referência/Componentes SAP.md",
+    "Referência/Grid.md",
     "Guias/Primeira automação.md",
     "Primeiros passos/Instalação e conexão.md",
     "Referência/SAP/Seleção e arquivos.md",
